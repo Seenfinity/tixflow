@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 
 type Message = {
   id: string;
@@ -32,9 +31,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [showEvents, setShowEvents] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [purchasePhase, setPurchasePhase] = useState("idle");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showCheckout]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -47,20 +50,23 @@ export default function Home() {
       const lower = input.toLowerCase();
       let response = "";
       let showResults = false;
+      let showCheckoutPanel = false;
 
-      if (lower.includes("find") || lower.includes("search") || lower.includes("concert") || lower.includes("event") || lower.includes("music")) {
+      if (lower.includes("find") || lower.includes("search") || lower.includes("concert") || lower.includes("event") || lower.includes("music") || lower.includes("london") || lower.includes("busca")) {
         response = "I found some amazing events for you! Here are my top recommendations:";
         showResults = true;
       } else if (lower.includes("calendar") || lower.includes("sync")) {
         response = "I've synced your selected events to your Google Calendar! You'll receive reminders 24 hours before each event.";
-      } else if (lower.includes("buy") || lower.includes("ticket") || lower.includes("purchase")) {
+      } else if (lower.includes("buy") || lower.includes("ticket") || lower.includes("purchase") || lower.includes("comprar")) {
         response = "Great choice! Your ticket will be minted as a cNFT on Solana.";
+        showCheckoutPanel = true;
       } else {
         response = "Tell me more about what type of events you're looking for - concerts, theater, sports?";
       }
 
       setMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: response }]);
       setShowEvents(showResults);
+      if (showCheckoutPanel) setShowCheckout(true);
       setIsLoading(false);
     }, 1500);
   };
@@ -121,20 +127,60 @@ export default function Home() {
               </div>
             ))}
             {selectedEvents.length > 0 && (
-              <button onClick={() => { setMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: `Perfect! ${selectedEvents.length} event(s) selected. Purchase or sync to calendar?` }]); setShowEvents(false); }} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+              <button onClick={() => { setShowCheckout(true); setShowEvents(false); setMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: `Perfect! ${selectedEvents.length} ticket(s) selected. Total: 0.01 SOL` }]); }} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
                 Continue with {selectedEvents.length} event{selectedEvents.length > 1 ? "s" : ""}
               </button>
             )}
           </div>
         )}
 
-        {isLoading && (
-          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
-            <div style={{ background: "#1e293b", padding: "14px 18px", borderRadius: 20, display: "flex", gap: 4 }}>
-              {[0,1,2].map(i => <span key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#64748b", animation: "pulse 1s infinite", animationDelay: `${i*0.15}s` }}></span>)}
+        {/* Checkout */}
+        {showCheckout && purchasePhase !== "success" && (
+          <div style={{ marginTop: 20, background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))", borderRadius: 20, padding: 24, border: "1px solid rgba(139, 92, 246, 0.3)" }}>
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 8 }}>🎫 {selectedEvents.length || 1} Ticket(s)</div>
+              <div style={{ fontSize: 24, fontWeight: 700 }}>Total: 0.01 SOL</div>
+            </div>
+            
+            {!walletConnected ? (
+              <button 
+                onClick={() => { setPurchasePhase("connecting"); setTimeout(() => { setWalletConnected(true); setWalletAddress("EW9vx...CZD8"); setPurchasePhase("idle"); }, 1500); }}
+                disabled={purchasePhase === "connecting"}
+                style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #8b5cf6, #a855f7)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
+              >
+                {purchasePhase === "connecting" ? "Connecting..." : "🦊 Connect Phantom Wallet"}
+              </button>
+            ) : (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 16, fontSize: 13, color: "#a1a1aa" }}>
+                  <span style={{ color: "#22c55e" }}>●</span> {walletAddress}
+                </div>
+                <button 
+                  onClick={() => { setPurchasePhase("buying"); setTimeout(() => { setPurchasePhase("success"); }, 2000); }}
+                  style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #ec4899, #f472b6)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
+                >
+                  {purchasePhase === "buying" ? "Minting cNFT..." : "Buy Now (0.01 SOL)"}
+                </button>
+              </div>
+            )}
+            
+            <p style={{ textAlign: "center", fontSize: 11, color: "#52525b", marginTop: 16 }}>
+              Powered by Solana cNFTs • Devnet
+            </p>
+          </div>
+        )}
+
+        {purchasePhase === "success" && (
+          <div style={{ marginTop: 20, textAlign: "center", padding: 24, background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))", borderRadius: 20, border: "1px solid rgba(34, 197, 94, 0.3)" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: "#22c55e", marginBottom: 4 }}>Tickets Purchased!</div>
+            <div style={{ fontSize: 13, color: "#71717a" }}>cNFT minted to your wallet</div>
+            <div style={{ marginTop: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 12, color: "#a1a1aa", display: "inline-block" }}>
+              <span style={{ color: "#22c55e" }}>●</span> {walletAddress}
             </div>
           </div>
         )}
+
         <div ref={messagesEndRef} />
       </div>
 

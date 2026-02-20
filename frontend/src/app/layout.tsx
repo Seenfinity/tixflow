@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "TixFlow - AI Event Assistant",
   description: "AI-powered event assistant that helps users discover, purchase, and coordinate event tickets",
   icons: {
-    icon: [{ url: "/logo.svg" }],
+    icon: "/logo.svg?v=2",
   },
 };
 
