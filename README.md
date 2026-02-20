@@ -4,7 +4,7 @@
 
 <div align="center">
 
-![TixFlow Logo](https://raw.githubusercontent.com/Seenfinity/tixflow/main/frontend/public/logo.svg)
+![TixFlow Logo](https://raw.githubusercontent.com/Seenfinity/tixflow/master/frontend/public/logo.svg)
 
 **Built for KYD Labs Ticketing Track @ Solana Graveyard Hackathon**
 
