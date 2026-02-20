@@ -1,4 +1,4 @@
-# TixFlow 🤖🎫
+# TixFlow
 
 > AI-powered event assistant for the future of ticketing
 
