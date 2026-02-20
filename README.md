@@ -1,62 +1,85 @@
 # TixFlow 🤖🎫
 
-AI-powered event assistant that helps users discover, purchase, and coordinate event tickets.
+> AI-powered event assistant for the future of ticketing
 
-## Features
+<div align="center">
 
-- **Event Discovery** - Find events based on preferences, artists, location
-- **Smart Purchase** - Monitor prices, compare options, buy tickets
-- **Calendar Sync** - Automatically sync events to Google Calendar
-- **Waitlist Management** - Get notified when sold-out events have availability
-- **Event Coordination** - Coordinate with friends, split payments, group bookings
+![TixFlow Logo](https://raw.githubusercontent.com/Seenfinity/tixflow/main/frontend/public/logo.svg)
 
-## Project Structure
+**Built for KYD Labs Ticketing Track @ Solana Graveyard Hackathon**
+
+</div>
+
+## 🎯 What is TixFlow?
+
+TixFlow is an AI agent that helps users discover, book, and coordinate event tickets — automatically. Just tell it what you want, and it handles the rest.
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔍 **Event Discovery** | Find events by artist, location, date, or genre |
+| 🎫 **Smart Booking** | Purchase tickets across platforms automatically |
+| 📅 **Calendar Sync** | Sync events to Google Calendar with reminders |
+| ⏰ **Waitlist** | Get notified when sold-out events have availability |
+| 🤖 **AI Agent** | Let your agent handle everything automatically |
+| 🔗 **NFT Tickets** | Tickets as cNFTs on Solana |
+
+## 🏗️ Architecture
 
 ```
-event-agent/
-├── frontend/          # Next.js web application
-│   ├── src/
-│   │   ├── app/     # Next.js app router
-│   │   └── components/
-│   └── public/
-├── skill/           # OpenClaw agent skill
-│   ├── skill.json
-│   └── src/
-└── docs/            # Documentation
+tixflow/
+├── frontend/          # Next.js 14 web app
+│   ├── src/app/      # App router pages
+│   └── public/        # Static assets
+├── skill/            # OpenClaw agent skill
+│   ├── scripts/       # Core functions
+│   └── skill.json     # Skill manifest
+└── README.md
 ```
 
-## Tech Stack
+## 🚀 Demo
 
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Agent**: OpenClaw Agent with custom skills
-- **APIs**: Google Calendar API, KYD Labs Protocol
+**[Live Demo →](https://frontend-smoky-seven-13.vercel.app)**
 
-## Getting Started
+Try these prompts:
+- "Find classical music concerts in London"
+- "Sync this to my calendar"
+- "I want to buy tickets"
 
-### Frontend
+## 🛠️ Tech Stack
 
+- **Frontend:** Next.js 14, TypeScript
+- **Agent:** OpenClaw with custom TixFlow skill
+- **Blockchain:** Solana (NFT tickets via KYD Protocol)
+- **Integrations:** Google Calendar API
+
+## 📦 Installation
+
+### As an AI Agent
+```bash
+clawhub install tixflow
+```
+
+### Run Locally
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### OpenClaw Skill
+## 🎪 Solana Graveyard Hackathon
 
-See `skill/` directory for OpenClaw skill configuration.
+This project is submitted to the **KYD Labs Ticketing Track** at Solana Graveyard Hackathon.
 
-## Use Cases
+We're building the future of event ticketing — where AI agents handle the complexity of finding, comparing, and purchasing tickets so humans don't have to.
 
-1. User asks: "Find classical music concerts in London this weekend"
-2. Agent searches events, shows options
-3. User selects one, agent checks availability
-4. Agent syncs to Google Calendar
-5. Agent monitors for price drops or cancellations
+## 🤝 Connect
 
-## Demo
+- **Author:** [@Seenfinity](https://github.com/Seenfinity)
+- **Demo:** https://frontend-smoky-seven-13.vercel.app
+- **Skill:** clawhub.com/skill/tixflow
 
-[View Live Demo](https://event-agent-demo.vercel.app)
-
-## License
+## 📄 License
 
 MIT
