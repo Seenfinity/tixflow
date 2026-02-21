@@ -175,8 +175,11 @@ export default function Home() {
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: "#22c55e", marginBottom: 4 }}>Tickets Purchased!</div>
             <div style={{ fontSize: 13, color: "#71717a" }}>cNFT minted to your wallet</div>
-            <div style={{ marginTop: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 12, color: "#a1a1aa", display: "inline-block" }}>
-              <span style={{ color: "#22c55e" }}>●</span> {walletAddress}
+            <div style={{ marginTop: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa", display: "inline-block" }}>
+              <span style={{ color: "#22c55e" }}>●</span> Mint: 9kTELGRafmpKygQqahhHbrDNaeA33tesobcbuicBKirL
+            </div>
+            <div style={{ marginTop: 8, fontSize: 11, color: "#64748b" }}>
+              View on Solana Explorer →
             </div>
           </div>
         )}
