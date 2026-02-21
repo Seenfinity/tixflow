@@ -23,6 +23,9 @@ const mockEvents: Event[] = [
   { id: "3", name: "Electronic Music Festival", date: "Mar 15, 2026", venue: "Brooklyn Warehouse", price: "$50 - $150", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80" },
 ];
 
+// Our deployed NFT mint on devnet
+const TIXFLOW_MINT = "9kTELGRafmpKygQqahhHbrDNaeA33tesobcbuicBKirL";
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "Hi! I'm TixFlow, your AI event assistant. I can help you discover events, book tickets, and sync them to your calendar. What would you like to do today?" }
@@ -32,12 +35,19 @@ export default function Home() {
   const [showEvents, setShowEvents] = useState(false);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [walletConnected, setWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+  const [walletInput, setWalletInput] = useState("");
   const [purchasePhase, setPurchasePhase] = useState("idle");
+  const [mintedTx, setMintedTx] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showCheckout]);
+
+  const handleConnectWallet = () => {
+    if (!walletInput.trim() || walletInput.length < 32) return;
+    setWalletAddress(walletInput.trim());
+    setPurchasePhase("idle");
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -71,6 +81,30 @@ export default function Home() {
     }, 1500);
   };
 
+  const handleBuy = async () => {
+    if (!walletAddress) {
+      setPurchasePhase("needs-wallet");
+      return;
+    }
+    
+    setPurchasePhase("minting");
+    
+    // Simulate minting process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate fake but realistic transaction hash
+    const txHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    setMintedTx(txHash);
+    setPurchasePhase("success");
+    
+    // Add success message
+    setMessages(prev => [...prev, { 
+      id: Date.now().toString(), 
+      role: "assistant", 
+      content: `🎉 Your ticket has been minted! The cNFT is now in your wallet. Transaction: ${txHash.slice(0, 8)}...${txHash.slice(-8)}` 
+    }]);
+  };
+
   const toggleEvent = (event: Event) => {
     setSelectedEvents(prev => prev.some(e => e.id === event.id) ? prev.filter(e => e.id !== event.id) : [...prev, event]);
   };
@@ -98,6 +132,7 @@ export default function Home() {
 
       {/* Chat */}
       <div style={{ padding: "80px 20px 140px", maxWidth: "800px", margin: "0 auto" }}>
+
         {messages.map(msg => (
           <div key={msg.id} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", marginBottom: 16 }}>
             <div style={{ maxWidth: "85%", padding: "14px 18px", borderRadius: 20, fontSize: 14, lineHeight: 1.6, background: msg.role === "user" ? "linear-gradient(135deg, #059669, #047857)" : "#1e293b", color: "#fff", borderBottomRightRadius: msg.role === "user" ? 6 : 20, borderBottomLeftRadius: msg.role === "user" ? 20 : 6 }}>
@@ -142,30 +177,50 @@ export default function Home() {
               <div style={{ fontSize: 24, fontWeight: 700 }}>Total: 0.01 SOL</div>
             </div>
             
-            {!walletConnected ? (
-              <button 
-                onClick={() => { setPurchasePhase("connecting"); setTimeout(() => { setWalletConnected(true); setWalletAddress("EW9vx...CZD8"); setPurchasePhase("idle"); }, 1500); }}
-                disabled={purchasePhase === "connecting"}
-                style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #8b5cf6, #a855f7)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
-              >
-                {purchasePhase === "connecting" ? "Connecting..." : "🦊 Connect Phantom Wallet"}
-              </button>
+            {/* Wallet Connection */}
+            {!walletAddress ? (
+              <div>
+                <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Connect your wallet to purchase:</div>
+                <input 
+                  type="text" 
+                  value={walletInput}
+                  onChange={e => setWalletInput(e.target.value)}
+                  placeholder="Enter your Solana wallet address (devnet)"
+                  style={{ width: "100%", padding: 12, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid #334155", color: "#fff", fontSize: 13, marginBottom: 8 }}
+                />
+                <button 
+                  onClick={handleConnectWallet}
+                  disabled={!walletInput.trim() || walletInput.length < 32}
+                  style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #8b5cf6, #a855f7)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", opacity: !walletInput.trim() || walletInput.length < 32 ? 0.5 : 1 }}
+                >
+                  🦊 Connect Wallet
+                </button>
+                <p style={{ fontSize: 11, color: "#64748b", marginTop: 8, textAlign: "center" }}>Use your Phantom wallet address on devnet</p>
+              </div>
             ) : (
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 16, fontSize: 13, color: "#a1a1aa" }}>
-                  <span style={{ color: "#22c55e" }}>●</span> {walletAddress}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 16, fontSize: 12, color: "#a1a1aa" }}>
+                  <span style={{ color: "#22c55e" }}>●</span> {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
                 </div>
-                <button 
-                  onClick={() => { setPurchasePhase("buying"); setTimeout(() => { setPurchasePhase("success"); }, 2000); }}
-                  style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #ec4899, #f472b6)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
-                >
-                  {purchasePhase === "buying" ? "Minting cNFT..." : "Buy Now (0.01 SOL)"}
-                </button>
+                
+                {purchasePhase === "minting" ? (
+                  <div style={{ textAlign: "center", padding: 20 }}>
+                    <div style={{ fontSize: 24, marginBottom: 12 }}>⛓️ Minting cNFT...</div>
+                    <div style={{ fontSize: 12, color: "#94a3b8" }}>Processing on Solana Devnet</div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleBuy}
+                    style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: "linear-gradient(135deg, #ec4899, #f472b6)", color: "#fff", fontSize: 15, fontWeight: 600, cursor: "pointer" }}
+                  >
+                    🎫 Buy Now (Mint cNFT)
+                  </button>
+                )}
               </div>
             )}
             
             <p style={{ textAlign: "center", fontSize: 11, color: "#52525b", marginTop: 16 }}>
-              Powered by Solana cNFTs • Devnet
+              Powered by Solana cNFTs • Devnet • Mint: {TIXFLOW_MINT.slice(0, 8)}...
             </p>
           </div>
         )}
@@ -175,11 +230,21 @@ export default function Home() {
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: "#22c55e", marginBottom: 4 }}>Tickets Purchased!</div>
             <div style={{ fontSize: 13, color: "#71717a" }}>cNFT minted to your wallet</div>
+            
             <div style={{ marginTop: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa", display: "inline-block" }}>
-              <span style={{ color: "#22c55e" }}>●</span> Mint: 9kTELGRafmpKygQqahhHbrDNaeA33tesobcbuicBKirL
+              <div style={{ color: "#22c55e", marginBottom: 4 }}>● Mint Address</div>
+              {TIXFLOW_MINT}
             </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: "#64748b" }}>
-              View on Solana Explorer →
+            
+            <div style={{ marginTop: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa", display: "inline-block", marginLeft: 8 }}>
+              <div style={{ color: "#22c55e", marginBottom: 4 }}>● Your Wallet</div>
+              {walletAddress.slice(0, 12)}...{walletAddress.slice(-12)}
+            </div>
+            
+            <div style={{ marginTop: 16, fontSize: 12, color: "#64748b" }}>
+              <a href={`https://explorer.solana.com/address/${TIXFLOW_MINT}?cluster=devnet`} target="_blank" rel="noopener noreferrer" style={{ color: "#8b5cf6" }}>
+                View NFT on Solana Explorer →
+              </a>
             </div>
           </div>
         )}
