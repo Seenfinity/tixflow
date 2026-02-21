@@ -1,13 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 export default function Landing() {
   const [hoveredBtn, setHoveredBtn] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Purple floating particles effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    
+    let animationId: number;
+    let particles: Array<{x: number; y: number; size: number; speedX: number; speedY: number; opacity: number}> = [];
+    
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    const createParticles = () => {
+      particles = [];
+      const count = Math.floor((canvas.width * canvas.height) / 15000);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speedX: (Math.random() - 0.5) * 0.3,
+          speedY: (Math.random() - 0.5) * 0.3,
+          opacity: Math.random() * 0.5 + 0.1
+        });
+      }
+    };
+    
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        
+        // Wrap around
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+        
+        // Draw particle with purple glow
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139, 92, 246, ${p.opacity})`;
+        ctx.fill();
+        
+        // Glow effect
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139, 92, 246, ${p.opacity * 0.15})`;
+        ctx.fill();
+      });
+      
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    resize();
+    createParticles();
+    animate();
+    
+    window.addEventListener("resize", () => { resize(); createParticles(); });
+    
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#fff", fontFamily: "system-ui, -apple-system, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0f", color: "#fff", fontFamily: "system-ui, -apple-system, sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* Purple floating particles */}
+      <canvas ref={canvasRef} style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} />
       <style>{`
         * { box-sizing: border-box; }
         body { margin: 0; }
@@ -38,7 +113,7 @@ export default function Landing() {
       `}</style>
       
       {/* Header - Toggle */}
-      <div style={{ padding: "24px 0", display: "flex", justifyContent: "center" }}>
+      <div style={{ padding: "24px 0", display: "flex", justifyContent: "center", position: "relative", zIndex: 10 }}>
         <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: "16px", padding: "6px", display: "flex", gap: "4px", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(10px)" }}>
           <Link href="/chat" style={{ padding: "14px 28px", borderRadius: "12px", color: "#fff", fontSize: "15px", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", background: "rgba(255,255,255,0.05)", transition: "all 0.3s", border: "1px solid rgba(255,255,255,0.1)" }}>
             <span style={{ fontSize: "18px" }}>👨</span> I'm a Human
@@ -50,7 +125,7 @@ export default function Landing() {
       </div>
 
       {/* Main Content */}
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px" }}>
+      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 20px", position: "relative", zIndex: 10 }}>
         
         {/* Hero */}
         <div style={{ textAlign: "center", padding: "60px 0 80px" }}>
