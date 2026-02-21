@@ -1,12 +1,14 @@
-# TixFlow
+# TixFlow 🎫🤖
 
-> AI-powered event assistant for the future of ticketing
+> AI-powered event concierge for the future of ticketing
 
 <div align="center">
 
-![TixFlow Logo](https://raw.githubusercontent.com/Seenfinity/tixflow/master/frontend/public/logo.svg)
+**Built for KYD Labs Solana Graveyard Hackathon**
 
-**Built for KYD Labs Ticketing Track @ Solana Graveyard Hackathon**
+![TixFlow Demo](https://frontend-smoky-seven-13.vercel.app)
+
+**Live Demo**: [https://frontend-smoky-seven-13.vercel.app](https://frontend-smoky-seven-13.vercel.app)
 
 </div>
 
@@ -18,68 +20,56 @@ TixFlow is an AI agent that helps users discover, book, and coordinate event tic
 
 | Feature | Description |
 |---------|-------------|
-| 🔍 **Event Discovery** | Find events by artist, location, date, or genre |
-| 🎫 **Smart Booking** | Purchase tickets across platforms automatically |
-| 📅 **Calendar Sync** | Sync events to Google Calendar with reminders |
-| ⏰ **Waitlist** | Get notified when sold-out events have availability |
-| 🤖 **AI Agent** | Let your agent handle everything automatically |
+| 🔍 **AI Discovery** | Natural language event search |
+| 🎫 **Smart Booking** | Purchase tickets across platforms |
+| 📅 **Calendar Sync** | Sync to Google Calendar with reminders |
+| ⏰ **Waitlist** | Get notified for sold-out events |
+| 🤖 **Agent Mode** | Let your AI agent handle everything |
 | 🔗 **NFT Tickets** | Tickets as cNFTs on Solana |
-
-## 🏗️ Architecture
-
-```
-tixflow/
-├── frontend/          # Next.js 14 web app
-│   ├── src/app/      # App router pages
-│   └── public/        # Static assets
-├── skill/            # OpenClaw agent skill
-│   ├── scripts/       # Core functions
-│   └── skill.json     # Skill manifest
-└── README.md
-```
-
-## 🚀 Demo
-
-**[Live Demo →](https://frontend-smoky-seven-13.vercel.app)**
-
-Try these prompts:
-- "Find classical music concerts in London"
-- "Sync this to my calendar"
-- "I want to buy tickets"
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 14, TypeScript
-- **Agent:** OpenClaw with custom TixFlow skill
-- **Blockchain:** Solana (NFT tickets via KYD Protocol)
-- **Integrations:** Google Calendar API
+- **Frontend**: Next.js 14 + TypeScript + Tailwind
+- **Blockchain**: Solana (Devnet)
+- **NFT Standard**: cNFT via Bubblegum
+- **Wallet**: Phantom Wallet Integration
+- **AI**: Natural language processing
 
-## 📦 Installation
+## 🚀 Getting Started
 
-### As an AI Agent
+### Demo Mode
+
+Visit the live demo: https://frontend-smoky-seven-13.vercel.app
+
+1. Search for events (try "find concerts in London")
+2. Select tickets
+3. Connect Phantom Wallet
+4. Mint your cNFT ticket!
+
+### Development
+
 ```bash
-clawhub install tixflow
-```
+# Clone the repo
+git clone https://github.com/Seenfinity/tixflow.git
+cd tixflow/frontend
 
-### Run Locally
-```bash
-cd frontend
+# Install dependencies
 npm install
+
+# Run locally
 npm run dev
 ```
 
-## 🎪 Solana Graveyard Hackathon
+## 🔗 Links
 
-This project is submitted to the **KYD Labs Ticketing Track** at Solana Graveyard Hackathon.
-
-We're building the future of event ticketing — where AI agents handle the complexity of finding, comparing, and purchasing tickets so humans don't have to.
-
-## 🤝 Connect
-
-- **Author:** [@Seenfinity](https://github.com/Seenfinity)
-- **Demo:** https://frontend-smoky-seven-13.vercel.app
-- **Skill:** clawhub.com/skill/tixflow
+- **Live Demo**: https://frontend-smoky-seven-13.vercel.app
+- **Chat Interface**: https://frontend-smoky-seven-13.vercel.app/chat
+- **GitHub**: https://github.com/Seenfinity/tixflow
 
 ## 📄 License
 
 MIT
+
+---
+
+*Built with ❤️ by Seenfinity for KYD Labs Solana Graveyard Hackathon*
