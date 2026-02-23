@@ -267,17 +267,28 @@ export default function Home() {
         })
       );
       
-      // Try to send via Phantom
+      // Try to sign and send via Phantom
+      let txHash = "";
+      
       if (window.phantom?.solana?.isPhantom) {
         addMessage("assistant", "📝 Please approve the transaction in your Phantom wallet...");
         
         try {
-          // Request Phantom to sign and send
-          const { signAndSendTransaction } = window.phantom.solana;
+          // Serialize transaction
+          const serializedTx = transaction.serialize({ requireAllSignatures: false });
+          const txBase64 = Buffer.from(serializedTx).toString('base64');
           
-          // @ts-ignore - Phantom API
-          const signedTx = await signAndSendTransaction(transaction);
-          const txHash = signedTx.signature;
+          // Use Phantom's request method
+          const response = await window.phantom.solana.request({
+            method: 'signAndSendTransaction',
+            params: {
+              message: txBase64,
+              // @ts-ignore
+              publicKey: walletAddress
+            }
+          });
+          
+          txHash = response.signature || response;
           
           setMintedTx(txHash);
           setPurchasePhase("success");
@@ -287,37 +298,38 @@ export default function Home() {
 
 🎫 Event: ${selectedEvents[0]?.name || 'Event'}
 💳 Wallet: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
-📋 TX: ${signedTx}
+📋 TX: ${txHash}
 
-🔗 Explorer: https://explorer.solana.com/tx/${signedTx}?cluster=devnet
+🔗 Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet
 
 What would you like to do next?`);
+          
         } catch (signErr: any) {
           console.error("Sign error:", signErr);
-          // If user rejected or error, show message
-          if (signErr.message?.includes('rejected') || signErr.code === 4001) {
+          
+          if (signErr.message?.includes('rejected') || signErr.code === 4001 || signErr.message?.includes('User declined')) {
             addMessage("assistant", "❌ Transaction rejected. Please try again and approve in your wallet.");
             setPurchasePhase("idle");
             return;
           }
+          
+          // If Phantom method fails, try alternative
           throw signErr;
         }
       } else {
-        // Fallback for demo
-        const txHash = `4x${Date.now()}${Math.random().toString(36).substr(2, 20)}`;
+        // Fallback - generate demo reference
+        txHash = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 15)}`;
         setMintedTx(txHash);
         setPurchasePhase("success");
         setPurchaseComplete(true);
         
-        addMessage("assistant", `🎉 Your ticket has been registered!
+        addMessage("assistant", `🎉 Ticket reserved (demo mode)!
 
 🎫 Event: ${selectedEvents[0]?.name || 'Event'}
 💳 Wallet: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
-📋 TX: ${txHash}
+📋 Ref: ${txHash}
 
-🔗 View on Devnet: https://explorer.solana.com/tx/${txHash}?cluster=devnet
-
-Note: Full cNFT mint requires mainnet with Bubblegum.
+Note: Connect Phantom wallet for real on-chain transaction.
 
 What would you like to do next?`);
       }
