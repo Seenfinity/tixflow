@@ -76,6 +76,7 @@ export default function Home() {
   const [showTransport, setShowTransport] = useState(false);
   const [selectedTransport, setSelectedTransport] = useState<TransportOption | null>(null);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
+  const [calendarUrl, setCalendarUrl] = useState("");
   const [userLocation, setUserLocation] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -122,19 +123,17 @@ export default function Home() {
   const handleSyncCalendar = () => {
     if (selectedEvents[0]) {
       const event = selectedEvents[0];
-      // Create Google Calendar link
       const startDate = '20260225T200000Z';
       const endDate = '20260225T230000Z';
       
-      const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent('Booked via TixFlow - AI Event Assistant')}&location=${encodeURIComponent(event.venue)}`;
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent('Booked via TixFlow - AI Event Assistant')}&location=${encodeURIComponent(event.venue)}`;
       
+      setCalendarUrl(url);
       addMessage("assistant", `✅ Event ready!
-
+      
 📅 ${event.name}
 📍 ${event.venue}
-🕐 Feb 25, 2026
-
-🔗 Add to Calendar: ${calendarUrl}`);
+🕐 Feb 25, 2026`);
       
       setCalendarSynced(true);
     } else {
@@ -320,6 +319,19 @@ Would you like to sync to calendar, find transportation, or discover more events
             </div>
           </div>
         ))}
+
+        {calendarUrl && (
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
+            <a 
+              href={calendarUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "linear-gradient(135deg, #f59e0b, #d97706)", borderRadius: 12, color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+            >
+              📅 Add to Google Calendar
+            </a>
+          </div>
+        )}
 
         {isLoading && (
           <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
