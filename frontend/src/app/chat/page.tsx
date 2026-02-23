@@ -99,8 +99,12 @@ export default function Home() {
 
   useEffect(() => { 
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+      const chatContainer = document.querySelector('[style*="overflowY: auto"]');
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }, 150);
   }, [messages, showCheckout, purchaseComplete, showEvents, showTransport, calendarUrl]);
 
   const addMessage = (role: "user" | "assistant", content: string) => {
@@ -315,7 +319,7 @@ Would you like to sync to calendar, find transportation, or discover more events
       </header>
 
       {/* Chat */}
-      <div style={{ padding: "80px 20px 140px", maxWidth: "800px", margin: "0 auto", position: "relative", overflow: "hidden", minHeight: "100vh" }}>
+      <div style={{ padding: "80px 20px 160px", maxWidth: "800px", margin: "0 auto", position: "relative", overflowY: "auto", height: "100vh", boxSizing: "border-box" }}>
         {/* Animated particles background */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
           {/* Purple/violet particles - logo color */}
