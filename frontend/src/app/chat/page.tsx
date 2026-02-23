@@ -97,7 +97,11 @@ export default function Home() {
     checkPhantom();
   }, []);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showCheckout, purchaseComplete]);
+  useEffect(() => { 
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  }, [messages, showCheckout, purchaseComplete, showEvents, showTransport, calendarUrl]);
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     setMessages(prev => [...prev, { id: Date.now().toString(), role, content }]);
@@ -136,8 +140,6 @@ export default function Home() {
 🕐 Feb 25, 2026`);
       
       setCalendarSynced(true);
-      setShowEvents(false);
-      setShowTransport(false);
     } else {
       addMessage("assistant", "📅 Please select an event first to sync to calendar.");
     }
@@ -354,7 +356,8 @@ Would you like to sync to calendar, find transportation, or discover more events
               href={calendarUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "linear-gradient(135deg, #f59e0b, #d97706)", borderRadius: 12, color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600 }}
+              onClick={() => setTimeout(() => setCalendarUrl(""), 500)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "linear-gradient(135deg, #f59e0b, #d97706)", borderRadius: 12, color: "#fff", textDecoration: "none", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               📅 Add to Google Calendar
             </a>
