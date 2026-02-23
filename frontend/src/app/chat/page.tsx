@@ -124,9 +124,41 @@ export default function Home() {
     }, 1500);
   };
 
-  const handleSelectTransport = (transport: TransportOption) => {
+  const handleSelectTransport = async (transport: TransportOption) => {
     setSelectedTransport(transport);
-    addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+    
+    // If user wants real route calculation
+    if (transport.id !== 'walk' && selectedEvents[0]) {
+      addMessage("assistant", `🚗 Calculating real route with ${transport.name}...`);
+      
+      try {
+        const response = await fetch('/api/directions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            origin: 'My Location, New York',
+            destination: selectedEvents[0].venue,
+            mode: transport.id === 'uber' ? 'DRIVE' : 'TRANSIT'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          addMessage("assistant", `🚗 ${transport.name}: ${data.route.distance} • ${data.route.duration} • ~${data.route.price}
+          
+📍 From: ${data.route.origin}
+📍 To: ${data.route.destination}`);
+        } else {
+          addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+        }
+      } catch (err) {
+        console.error("Directions error:", err);
+        addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+      }
+    } else {
+      addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+    }
   };
 
   const handleSend = () => {
