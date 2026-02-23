@@ -136,6 +136,8 @@ export default function Home() {
 🕐 Feb 25, 2026`);
       
       setCalendarSynced(true);
+      setShowEvents(false);
+      setShowTransport(false);
     } else {
       addMessage("assistant", "📅 Please select an event first to sync to calendar.");
     }
@@ -314,20 +316,27 @@ Would you like to sync to calendar, find transportation, or discover more events
       <div style={{ padding: "80px 20px 140px", maxWidth: "800px", margin: "0 auto", position: "relative", overflow: "hidden", minHeight: "100vh" }}>
         {/* Animated particles background */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
-          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "rgba(139, 92, 246, 0.3)", top: "10%", left: "20%", animation: "float 6s ease-in-out infinite" }}></div>
-          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "rgba(236, 72, 153, 0.3)", top: "30%", left: "80%", animation: "float 8s ease-in-out infinite" }}></div>
-          <div style={{ position: "absolute", width: 5, height: 5, borderRadius: "50%", background: "rgba(16, 185, 129, 0.2)", top: "50%", left: "10%", animation: "float 7s ease-in-out infinite" }}></div>
-          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "rgba(245, 158, 11, 0.3)", top: "70%", left: "60%", animation: "float 5s ease-in-out infinite" }}></div>
-          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "rgba(99, 102, 241, 0.3)", top: "85%", left: "40%", animation: "float 9s ease-in-out infinite" }}></div>
-          <div style={{ position: "absolute", width: 2, height: 2, borderRadius: "50%", background: "rgba(139, 92, 246, 0.4)", top: "25%", left: "50%", animation: "float 6s ease-in-out infinite" }}></div>
+          {/* Purple/violet particles - logo color */}
+          <div style={{ position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, rgba(139, 92, 246, 0) 70%)", top: "5%", left: "10%", animation: "float 8s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)", top: "15%", left: "85%", animation: "float 6s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 5, height: 5, borderRadius: "50%", background: "radial-gradient(circle, rgba(167, 139, 250, 0.7) 0%, rgba(139, 92, 246, 0) 70%)", top: "25%", left: "30%", animation: "float 9s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "radial-gradient(circle, rgba(196, 181, 253, 0.8) 0%, rgba(139, 92, 246, 0) 70%)", top: "40%", left: "70%", animation: "float 7s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0) 70%)", top: "55%", left: "15%", animation: "float 10s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "radial-gradient(circle, rgba(167, 139, 250, 0.6) 0%, rgba(139, 92, 246, 0) 70%)", top: "65%", left: "50%", animation: "float 8s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 5, height: 5, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, rgba(139, 92, 246, 0) 70%)", top: "75%", left: "80%", animation: "float 6s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "radial-gradient(circle, rgba(196, 181, 253, 0.9) 0%, rgba(139, 92, 246, 0) 70%)", top: "85%", left: "25%", animation: "float 9s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 6, height: 6, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0) 70%)", top: "90%", left: "60%", animation: "float 7s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "radial-gradient(circle, rgba(167, 139, 250, 0.5) 0%, rgba(139, 92, 246, 0) 70%)", top: "35%", left: "5%", animation: "float 11s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 5, height: 5, borderRadius: "50%", background: "radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(139, 92, 246, 0) 70%)", top: "50%", left: "90%", animation: "float 8s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "radial-gradient(circle, rgba(196, 181, 253, 0.7) 0%, rgba(139, 92, 246, 0) 70%)", top: "20%", left: "55%", animation: "float 10s ease-in-out infinite" }}></div>
         </div>
         
         <style>{`
           @keyframes float {
-            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
-            25% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
-            50% { transform: translateY(-10px) translateX(-10px); opacity: 0.4; }
-            75% { transform: translateY(-30px) translateX(5px); opacity: 0.5; }
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); opacity: 0.3; }
+            25% { transform: translateY(-25px) translateX(15px) scale(1.2); opacity: 0.8; }
+            50% { transform: translateY(-15px) translateX(-15px) scale(1); opacity: 0.5; }
+            75% { transform: translateY(-35px) translateX(10px) scale(1.3); opacity: 0.7; }
           }
         `}</style>
 
