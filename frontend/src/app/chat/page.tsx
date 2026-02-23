@@ -139,9 +139,7 @@ export default function Home() {
 📍 ${event.venue}
 🕐 Feb 25, 2026
 
-🔗 ${calendarUrl}
-          
-Click the link above to add it to your calendar!`);
+👉 Click here to add to your calendar: https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=20260225T200000Z/20260225T230000Z&details=${encodeURIComponent('Booked via TixFlow')}&location=${encodeURIComponent(event.venue)}`);
       }, 1000);
     } else {
       addMessage("assistant", "📅 Syncing your selected event to Google Calendar...");
