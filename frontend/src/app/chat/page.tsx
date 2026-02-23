@@ -143,6 +143,7 @@ export default function Home() {
 
   const handleSelectTransport = async (transport: TransportOption) => {
     setSelectedTransport(transport);
+    setShowTransport(false); // Close panel after selection
     
     // If user provided their location and selected an event, calculate real route
     if (userLocation && selectedEvents[0]) {
@@ -171,16 +172,16 @@ export default function Home() {
 📍 From: ${data.route.origin}
 📍 To: ${data.route.destination}`);
         } else {
-          addMessage("assistant", `🚗 Could not calculate route. ${transport.name} estimated: ${transport.price}, ${transport.time}`);
+          addMessage("assistant", `🚗 Could not calculate route. ${transport.name}: ${transport.price}, ${transport.time}`);
         }
       } catch (err) {
         console.error("Directions error:", err);
-        addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time} (route calculation unavailable)`);
+        addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time} (calculation unavailable)`);
       }
     } else if (!userLocation && selectedEvents[0]) {
       addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time}
 
-💡 Tip: Enter your location above to get a real route calculation!`);
+💡 Tip: Enter your location next time for real route!`);
     } else {
       addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time}`);
     }
@@ -310,18 +311,36 @@ Would you like to sync to calendar, find transportation, or discover more events
       </header>
 
       {/* Chat */}
-      <div style={{ padding: "80px 20px 140px", maxWidth: "800px", margin: "0 auto" }}>
+      <div style={{ padding: "80px 20px 140px", maxWidth: "800px", margin: "0 auto", position: "relative", overflow: "hidden", minHeight: "100vh" }}>
+        {/* Animated particles background */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0 }}>
+          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "rgba(139, 92, 246, 0.3)", top: "10%", left: "20%", animation: "float 6s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "rgba(236, 72, 153, 0.3)", top: "30%", left: "80%", animation: "float 8s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 5, height: 5, borderRadius: "50%", background: "rgba(16, 185, 129, 0.2)", top: "50%", left: "10%", animation: "float 7s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 3, height: 3, borderRadius: "50%", background: "rgba(245, 158, 11, 0.3)", top: "70%", left: "60%", animation: "float 5s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 4, height: 4, borderRadius: "50%", background: "rgba(99, 102, 241, 0.3)", top: "85%", left: "40%", animation: "float 9s ease-in-out infinite" }}></div>
+          <div style={{ position: "absolute", width: 2, height: 2, borderRadius: "50%", background: "rgba(139, 92, 246, 0.4)", top: "25%", left: "50%", animation: "float 6s ease-in-out infinite" }}></div>
+        </div>
+        
+        <style>{`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+            25% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
+            50% { transform: translateY(-10px) translateX(-10px); opacity: 0.4; }
+            75% { transform: translateY(-30px) translateX(5px); opacity: 0.5; }
+          }
+        `}</style>
 
         {messages.map(msg => (
-          <div key={msg.id} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", marginBottom: 16 }}>
-            <div style={{ maxWidth: "85%", padding: "14px 18px", borderRadius: 20, fontSize: 14, lineHeight: 1.6, background: msg.role === "user" ? "linear-gradient(135deg, #059669, #047857)" : "#1e293b", color: "#fff", borderBottomRightRadius: msg.role === "user" ? 6 : 20, borderBottomLeftRadius: msg.role === "user" ? 20 : 6, whiteSpace: "pre-wrap" }}>
+          <div key={msg.id} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", marginBottom: 16, position: "relative", zIndex: 1 }}>
+            <div style={{ maxWidth: "85%", padding: "14px 18px", borderRadius: 20, fontSize: 14, lineHeight: 1.6, background: msg.role === "user" ? "linear-gradient(135deg, #059669, #047857)" : "#1e293b", color: "#fff", borderBottomRightRadius: msg.role === "user" ? 6 : 20, borderBottomLeftRadius: msg.role === "user" ? 20 : 6, whiteSpace: "pre-wrap", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}>
               {msg.content}
             </div>
           </div>
         ))}
 
         {calendarUrl && (
-          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16, position: "relative", zIndex: 1 }}>
             <a 
               href={calendarUrl} 
               target="_blank" 
