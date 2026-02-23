@@ -38,6 +38,8 @@ const transportOptions: TransportOption[] = [
   { id: "walk", name: "Walk", price: "Free", time: "20 min" },
 ];
 
+type UserLocation = string;
+
 // TixFlow NFT Collection on devnet
 const TIXFLOW_MINT = "9kTELGRafmpKygQqahhHbrDNaeA33tesobcbuicBKirL";
 
@@ -74,6 +76,7 @@ export default function Home() {
   const [showTransport, setShowTransport] = useState(false);
   const [selectedTransport, setSelectedTransport] = useState<TransportOption | null>(null);
   const [purchaseComplete, setPurchaseComplete] = useState(false);
+  const [userLocation, setUserLocation] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check for Phantom
@@ -120,49 +123,38 @@ export default function Home() {
     if (selectedEvents[0]) {
       const event = selectedEvents[0];
       // Create Google Calendar link
-      const title = encodeURIComponent(event.name);
-      const details = encodeURIComponent(`Event at ${event.venue}\n\nBooked via TixFlow - AI Event Assistant`);
-      const location = encodeURIComponent(event.venue);
-      // Parse date - for demo using Feb 2026
-      const startDate = '20260225T200000Z'; // Feb 25, 2026 8PM UTC
-      const endDate = '20260225T230000Z';   // Feb 25, 2026 11PM UTC
+      const startDate = '20260225T200000Z';
+      const endDate = '20260225T230000Z';
       
-      const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}&details=${details}&location=${location}`;
+      const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent('Booked via TixFlow - AI Event Assistant')}&location=${encodeURIComponent(event.venue)}`;
       
-      addMessage("assistant", `📅 Creating calendar event for "${event.name}"...`);
-      
-      setTimeout(() => {
-        setCalendarSynced(true);
-        addMessage("assistant", `✅ Event added to your Google Calendar!
+      addMessage("assistant", `✅ Event ready for your calendar!
 
 📅 ${event.name}
 📍 ${event.venue}
 🕐 Feb 25, 2026
 
-👉 Click here to add to your calendar: https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=20260225T200000Z/20260225T230000Z&details=${encodeURIComponent('Booked via TixFlow')}&location=${encodeURIComponent(event.venue)}`);
-      }, 1000);
+👉 Click to add: [Add to Calendar](${calendarUrl})`);
+      
+      setCalendarSynced(true);
     } else {
-      addMessage("assistant", "📅 Syncing your selected event to Google Calendar...");
-      setTimeout(() => {
-        setCalendarSynced(true);
-        addMessage("assistant", "✅ Event synced to your Google Calendar! You'll receive reminders 24 hours before the event.");
-      }, 1500);
+      addMessage("assistant", "📅 Please select an event first to sync to calendar.");
     }
   };
 
   const handleSelectTransport = async (transport: TransportOption) => {
     setSelectedTransport(transport);
     
-    // If user wants real route calculation
-    if (transport.id !== 'walk' && selectedEvents[0]) {
-      addMessage("assistant", `🚗 Calculating real route with ${transport.name}...`);
+    // If user provided their location and selected an event, calculate real route
+    if (userLocation && selectedEvents[0]) {
+      addMessage("assistant", `🚗 Calculating route from "${userLocation}" to "${selectedEvents[0].venue}"...`);
       
       try {
         const response = await fetch('/api/directions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            origin: 'My Location, New York',
+            origin: userLocation,
             destination: selectedEvents[0].venue,
             mode: transport.id === 'uber' ? 'DRIVE' : 'TRANSIT'
           })
@@ -171,19 +163,27 @@ export default function Home() {
         const data = await response.json();
         
         if (data.success) {
-          addMessage("assistant", `🚗 ${transport.name}: ${data.route.distance} • ${data.route.duration} • ~${data.route.price}
-          
+          addMessage("assistant", `🚗 ${transport.name} Route:
+
+📏 Distance: ${data.route.distance}
+⏱️ Duration: ${data.route.duration}
+💰 Est. Price: ~${data.route.price}
+
 📍 From: ${data.route.origin}
 📍 To: ${data.route.destination}`);
         } else {
-          addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+          addMessage("assistant", `🚗 Could not calculate route. ${transport.name} estimated: ${transport.price}, ${transport.time}`);
         }
       } catch (err) {
         console.error("Directions error:", err);
-        addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+        addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time} (route calculation unavailable)`);
       }
+    } else if (!userLocation && selectedEvents[0]) {
+      addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time}
+
+💡 Tip: Enter your location above to get a real route calculation!`);
     } else {
-      addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
+      addMessage("assistant", `🚗 ${transport.name}: ${transport.price} • ${transport.time}`);
     }
   };
 
@@ -368,8 +368,23 @@ Would you like to sync to calendar, find transportation, or discover more events
 
         {/* Transport Options */}
         {showTransport && !purchaseComplete && (
-          <div style={{ marginTop: 20, background: "#1e293b", borderRadius: 16, padding: 16 }}>
-            <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14 }}>🚗 Transportation Options</div>
+          <div style={{ marginTop: 20, background: "#1e293b", borderRadius: 16, padding: 16, maxHeight: "60vh", overflowY: "auto" }}>
+            <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span>🚗 Transportation Options</span>
+              <button onClick={() => { setShowTransport(false); setUserLocation(""); }} style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 18 }}>✕</button>
+            </div>
+            
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>📍 Your location (for real route):</label>
+              <input 
+                type="text" 
+                value={userLocation} 
+                onChange={(e) => setUserLocation(e.target.value)}
+                placeholder="e.g., Times Square, NYC"
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 8, background: "#0f172a", border: "1px solid #334155", color: "#fff", fontSize: 13 }}
+              />
+            </div>
+            
             {transportOptions.map(transport => (
               <div key={transport.id} onClick={() => handleSelectTransport(transport)} style={{ background: selectedTransport?.id === transport.id ? "rgba(99,102,241,0.2)" : "transparent", border: selectedTransport?.id === transport.id ? "1px solid #6366f1" : "1px solid #334155", borderRadius: 12, padding: 12, marginBottom: 8, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
@@ -379,9 +394,6 @@ Would you like to sync to calendar, find transportation, or discover more events
                 <div style={{ fontWeight: 600, color: "#6366f1" }}>{transport.price}</div>
               </div>
             ))}
-            <button onClick={() => setShowTransport(false)} style={{ width: "100%", marginTop: 8, padding: 10, borderRadius: 10, background: "transparent", border: "1px solid #334155", color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
-              Close
-            </button>
           </div>
         )}
 
