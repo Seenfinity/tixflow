@@ -128,13 +128,13 @@ export default function Home() {
       
       const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent('Booked via TixFlow - AI Event Assistant')}&location=${encodeURIComponent(event.venue)}`;
       
-      addMessage("assistant", `✅ Event ready for your calendar!
+      addMessage("assistant", `✅ Event ready!
 
 📅 ${event.name}
 📍 ${event.venue}
 🕐 Feb 25, 2026
 
-👉 Click to add: [Add to Calendar](${calendarUrl})`);
+🔗 Add to Calendar: ${calendarUrl}`);
       
       setCalendarSynced(true);
     } else {
