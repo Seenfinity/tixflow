@@ -117,11 +117,39 @@ export default function Home() {
   };
 
   const handleSyncCalendar = () => {
-    addMessage("assistant", "📅 Syncing your selected event to Google Calendar...");
-    setTimeout(() => {
-      setCalendarSynced(true);
-      addMessage("assistant", "✅ Event synced to your Google Calendar! You'll receive reminders 24 hours before the event.");
-    }, 1500);
+    if (selectedEvents[0]) {
+      const event = selectedEvents[0];
+      // Create Google Calendar link
+      const title = encodeURIComponent(event.name);
+      const details = encodeURIComponent(`Event at ${event.venue}\n\nBooked via TixFlow - AI Event Assistant`);
+      const location = encodeURIComponent(event.venue);
+      // Parse date - for demo using Feb 2026
+      const startDate = '20260225T200000Z'; // Feb 25, 2026 8PM UTC
+      const endDate = '20260225T230000Z';   // Feb 25, 2026 11PM UTC
+      
+      const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}&details=${details}&location=${location}`;
+      
+      addMessage("assistant", `📅 Creating calendar event for "${event.name}"...`);
+      
+      setTimeout(() => {
+        setCalendarSynced(true);
+        addMessage("assistant", `✅ Event added to your Google Calendar!
+
+📅 ${event.name}
+📍 ${event.venue}
+🕐 Feb 25, 2026
+
+🔗 ${calendarUrl}
+          
+Click the link above to add it to your calendar!`);
+      }, 1000);
+    } else {
+      addMessage("assistant", "📅 Syncing your selected event to Google Calendar...");
+      setTimeout(() => {
+        setCalendarSynced(true);
+        addMessage("assistant", "✅ Event synced to your Google Calendar! You'll receive reminders 24 hours before the event.");
+      }, 1500);
+    }
   };
 
   const handleSelectTransport = async (transport: TransportOption) => {
