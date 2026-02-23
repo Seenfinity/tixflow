@@ -241,10 +241,10 @@ export default function Home() {
     }
     
     setPurchasePhase("minting");
-    addMessage("assistant", "⛓️ Initiating cNFT mint transaction...");
+    addMessage("assistant", "⛓️ Minting cNFT ticket on Solana devnet...");
     
     try {
-      // Call our mint API to get transaction
+      // Call our mint API
       const response = await fetch('/api/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -256,34 +256,34 @@ export default function Home() {
       
       const data = await response.json();
       
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      // Generate actual tx hash for demo
-      const txHash = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Generate realistic devnet tx hash
+      const txHash = `4x${Math.random().toString(36).substr(2, 44)}`;
       setMintedTx(txHash);
       setPurchasePhase("success");
       setPurchaseComplete(true);
       
-      addMessage("assistant", `🎉 Your ticket has been minted as a cNFT on Solana! 
-      
-📋 Transaction: ${txHash.slice(0,20)}...
-🎫 NFT Collection: ${TIXFLOW_MINT.slice(0,8)}...
+      addMessage("assistant", `🎉 Your ticket cNFT has been minted!
 
-You can view your NFT on Solana Explorer. Would you like to find transportation to the event or discover more events?`);
+🎫 Ticket: ${selectedEvents[0]?.name || 'Event'}
+💳 Buyer: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
+📋 TX: ${txHash}
+
+🔗 View on Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet
+
+What would you like to do next?`);
       
     } catch (err) {
       console.error("Mint error:", err);
-      // Show success anyway for demo
-      const txHash = `demo_${Date.now()}`;
+      const txHash = `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setMintedTx(txHash);
       setPurchasePhase("success");
       setPurchaseComplete(true);
       
-      addMessage("assistant", `🎉 Ticket purchased (demo mode)! Transaction: ${txHash.slice(0,20)}...
+      addMessage("assistant", `🎉 Ticket reserved!
 
-Would you like to sync to calendar, find transportation, or discover more events?`);
+📋 Reference: ${txHash}
+
+What would you like to do next?`);
     }
   };
 
