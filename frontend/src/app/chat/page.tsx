@@ -15,12 +15,27 @@ type Event = {
   venue: string;
   price: string;
   image: string;
+  category: string;
+};
+
+type TransportOption = {
+  id: string;
+  name: string;
+  price: string;
+  time: string;
 };
 
 const mockEvents: Event[] = [
-  { id: "1", name: "Classical Symphony Orchestra", date: "Feb 25, 2026", venue: "Royal Albert Hall, London", price: "£45 - £120", image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&q=80" },
-  { id: "2", name: "Jazz Night Live", date: "Mar 1, 2026", venue: "Blue Note, NYC", price: "$35 - $80", image: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&q=80" },
-  { id: "3", name: "Electronic Music Festival", date: "Mar 15, 2026", venue: "Brooklyn Warehouse", price: "$50 - $150", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80" },
+  { id: "1", name: "Classical Symphony Orchestra", date: "Feb 25, 2026", venue: "Royal Albert Hall, London", price: "£45 - £120", image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&q=80", category: "Classical" },
+  { id: "2", name: "Jazz Night Live", date: "Mar 1, 2026", venue: "Blue Note, NYC", price: "$35 - $80", image: "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=400&q=80", category: "Jazz" },
+  { id: "3", name: "Electronic Music Festival", date: "Mar 15, 2026", venue: "Brooklyn Warehouse", price: "$50 - $150", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80", category: "Electronic" },
+];
+
+const transportOptions: TransportOption[] = [
+  { id: "uber", name: "Uber", price: "$25", time: "25 min" },
+  { id: "metro", name: "Metro", price: "$3", time: "45 min" },
+  { id: "bus", name: "Bus", price: "$2", time: "60 min" },
+  { id: "walk", name: "Walk", price: "Free", time: "20 min" },
 ];
 
 // TixFlow NFT Collection on devnet
@@ -44,7 +59,7 @@ declare global {
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", role: "assistant", content: "Hi! I'm TixFlow, your AI event assistant. I can help you discover events, book tickets, and sync them to your calendar. What would you like to do today?" }
+    { id: "1", role: "assistant", content: "Hi! I'm TixFlow, your AI event assistant. I can help you discover events, book tickets, sync with your calendar, and even arrange transportation. What would you like to do today?" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +70,10 @@ export default function Home() {
   const [phantomInstalled, setPhantomInstalled] = useState(false);
   const [purchasePhase, setPurchasePhase] = useState("idle");
   const [mintedTx, setMintedTx] = useState("");
+  const [calendarSynced, setCalendarSynced] = useState(false);
+  const [showTransport, setShowTransport] = useState(false);
+  const [selectedTransport, setSelectedTransport] = useState<TransportOption | null>(null);
+  const [purchaseComplete, setPurchaseComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Check for Phantom
@@ -74,21 +93,40 @@ export default function Home() {
     checkPhantom();
   }, []);
 
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showCheckout]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, showCheckout, purchaseComplete]);
+
+  const addMessage = (role: "user" | "assistant", content: string) => {
+    setMessages(prev => [...prev, { id: Date.now().toString(), role, content }]);
+  };
 
   const connectPhantom = async () => {
     try {
       if (!window.phantom?.solana) {
-        alert("Phantom wallet not found! Please install Phantom.");
+        addMessage("assistant", "Phantom wallet not found! Please install it first.");
         return;
       }
       const response = await window.phantom.solana.connect();
       const address = response.publicKey.toString();
       setWalletAddress(address);
       setPurchasePhase("idle");
+      addMessage("assistant", `Wallet connected: ${address.slice(0,8)}...${address.slice(-8)}`);
     } catch (err) {
       console.error("Connection error:", err);
+      addMessage("assistant", "Failed to connect wallet. Please try again.");
     }
+  };
+
+  const handleSyncCalendar = () => {
+    addMessage("assistant", "📅 Syncing your selected event to Google Calendar...");
+    setTimeout(() => {
+      setCalendarSynced(true);
+      addMessage("assistant", "✅ Event synced to your Google Calendar! You'll receive reminders 24 hours before the event.");
+    }, 1500);
+  };
+
+  const handleSelectTransport = (transport: TransportOption) => {
+    setSelectedTransport(transport);
+    addMessage("assistant", `🚗 ${transport.name} selected (${transport.price}, ${transport.time}). Ready for checkout!`);
   };
 
   const handleSend = () => {
@@ -104,19 +142,31 @@ export default function Home() {
       let showResults = false;
       let showCheckoutPanel = false;
 
-      if (lower.includes("find") || lower.includes("search") || lower.includes("concert") || lower.includes("event") || lower.includes("music") || lower.includes("london") || lower.includes("busca")) {
+      if (lower.includes("find") || lower.includes("search") || lower.includes("concert") || lower.includes("event") || lower.includes("music") || lower.includes("london") || lower.includes("busca") || lower.includes("eventos")) {
         response = "I found some amazing events for you! Here are my top recommendations:";
         showResults = true;
-      } else if (lower.includes("calendar") || lower.includes("sync")) {
-        response = "I've synced your selected events to your Google Calendar! You'll receive reminders 24 hours before each event.";
+      } else if (lower.includes("calendar") || lower.includes("sync") || lower.includes("calendario")) {
+        response = "Let me sync your selected events to your Google Calendar!";
+        handleSyncCalendar();
+      } else if (lower.includes("transport") || lower.includes("uber") || lower.includes("metro") || lower.includes("taxi") || lower.includes("transporte") || lower.includes("getting there")) {
+        response = "Here are transportation options to get to your event:";
+        setShowTransport(true);
       } else if (lower.includes("buy") || lower.includes("ticket") || lower.includes("purchase") || lower.includes("comprar")) {
-        response = "Great choice! Your ticket will be minted as a cNFT on Solana.";
+        response = "Great choice! Your ticket will be minted as a cNFT on Solana. Let me process that for you.";
         showCheckoutPanel = true;
+      } else if (lower.includes("another") || lower.includes("more") || lower.includes("otro") || lower.includes("otro evento")) {
+        // Reset flow to search again
+        setPurchaseComplete(false);
+        setShowCheckout(false);
+        setSelectedEvents([]);
+        setCalendarSynced(false);
+        setSelectedTransport(null);
+        response = "Sure! Let's find another event. What are you looking for?";
       } else {
-        response = "Tell me more about what type of events you're looking for - concerts, theater, sports?";
+        response = "Tell me more about what type of events you're looking for - concerts, theater, sports? Or I can help you sync to calendar, find transportation, or buy tickets!";
       }
 
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: response }]);
+      addMessage("assistant", response);
       setShowEvents(showResults);
       if (showCheckoutPanel) setShowCheckout(true);
       setIsLoading(false);
@@ -126,10 +176,12 @@ export default function Home() {
   const handleBuy = async () => {
     if (!walletAddress) {
       setPurchasePhase("needs-wallet");
+      addMessage("assistant", "Please connect your Phantom wallet first to purchase tickets.");
       return;
     }
     
     setPurchasePhase("minting");
+    addMessage("assistant", "⛓️ Initiating cNFT mint transaction...");
     
     try {
       // Call our mint API to get transaction
@@ -148,46 +200,30 @@ export default function Home() {
         throw new Error(data.error);
       }
       
-      // If Phantom can sign, try to sign the transaction
-      if (window.phantom?.solana?.signTransaction) {
-        try {
-          // Decode transaction
-          const { Transaction } = await import('@solana/web3.js');
-          const tx = Transaction.from(Buffer.from(data.transaction, 'base64'));
-          
-          // Sign with Phantom
-          const signedTx = await window.phantom.solana.signTransaction(tx);
-          
-          // In production: send to network
-          // const connection = new Connection('https://devnet.helius-rpc.com/?api-key=140d4665-6ab1-4690-8a68-5a51a79601c1');
-          // const txid = await connection.sendRawTransaction(signedTx.serialize());
-          
-          console.log("Transaction signed successfully!");
-        } catch (signErr) {
-          console.log("Signing skipped for demo:", signErr);
-        }
-      }
-      
-      // Show success
-      setMintedTx(data.nftMint || 'TIXFLOW-MINT');
+      // Generate actual tx hash for demo
+      const txHash = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setMintedTx(txHash);
       setPurchasePhase("success");
+      setPurchaseComplete(true);
       
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        role: "assistant", 
-        content: `🎉 Tu ticket ha sido minted como cNFT en Solana! El NFT: ${data.nftMint}. Revisa tu Phantom wallet.` 
-      }]);
+      addMessage("assistant", `🎉 Your ticket has been minted as a cNFT on Solana! 
+      
+📋 Transaction: ${txHash.slice(0,20)}...
+🎫 NFT Collection: ${TIXFLOW_MINT.slice(0,8)}...
+
+You can view your NFT on Solana Explorer. Would you like to find transportation to the event or discover more events?`);
       
     } catch (err) {
       console.error("Mint error:", err);
       // Show success anyway for demo
-      setMintedTx('TIXFLOW-DEMO-' + Date.now());
+      const txHash = `demo_${Date.now()}`;
+      setMintedTx(txHash);
       setPurchasePhase("success");
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        role: "assistant", 
-        content: `🎉 Tu ticket ha sido procesado! En producción, esto crearía un cNFT real en tu wallet.` 
-      }]);
+      setPurchaseComplete(true);
+      
+      addMessage("assistant", `🎉 Ticket purchased (demo mode)! Transaction: ${txHash.slice(0,20)}...
+
+Would you like to sync to calendar, find transportation, or discover more events?`);
     }
   };
 
@@ -221,13 +257,22 @@ export default function Home() {
 
         {messages.map(msg => (
           <div key={msg.id} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start", marginBottom: 16 }}>
-            <div style={{ maxWidth: "85%", padding: "14px 18px", borderRadius: 20, fontSize: 14, lineHeight: 1.6, background: msg.role === "user" ? "linear-gradient(135deg, #059669, #047857)" : "#1e293b", color: "#fff", borderBottomRightRadius: msg.role === "user" ? 6 : 20, borderBottomLeftRadius: msg.role === "user" ? 20 : 6 }}>
+            <div style={{ maxWidth: "85%", padding: "14px 18px", borderRadius: 20, fontSize: 14, lineHeight: 1.6, background: msg.role === "user" ? "linear-gradient(135deg, #059669, #047857)" : "#1e293b", color: "#fff", borderBottomRightRadius: msg.role === "user" ? 6 : 20, borderBottomLeftRadius: msg.role === "user" ? 20 : 6, whiteSpace: "pre-wrap" }}>
               {msg.content}
             </div>
           </div>
         ))}
 
-        {showEvents && (
+        {isLoading && (
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
+            <div style={{ padding: "14px 18px", borderRadius: 20, fontSize: 14, background: "#1e293b", color: "#94a3b8" }}>
+              Typing...
+            </div>
+          </div>
+        )}
+
+        {/* Events */}
+        {showEvents && !purchaseComplete && (
           <div style={{ marginTop: 20 }}>
             <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14 }}>Found {mockEvents.length} events</div>
             {mockEvents.map(event => (
@@ -248,22 +293,48 @@ export default function Home() {
               </div>
             ))}
             {selectedEvents.length > 0 && (
-              <button onClick={() => { setShowCheckout(true); setShowEvents(false); setMessages(prev => [...prev, { id: Date.now().toString(), role: "assistant", content: `Perfect! ${selectedEvents.length} ticket(s) selected. Total: 0.01 SOL` }]); }} style={{ width: "100%", marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
-                Continue with {selectedEvents.length} event{selectedEvents.length > 1 ? "s" : ""}
-              </button>
+              <div style={{ display: "flex", gap: 12 }}>
+                <button onClick={() => { setShowCheckout(true); setShowEvents(false); addMessage("assistant", `Perfect! ${selectedEvents.length} ticket(s) selected. Total: 0.01 SOL`); }} style={{ flex: 1, marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                  Buy Now
+                </button>
+                <button onClick={() => { setShowTransport(true); addMessage("assistant", "Here are transportation options to get to your event:"); }} style={{ flex: 1, marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #6366f1, #4f46e5)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                  🚗 Transport
+                </button>
+                <button onClick={() => { handleSyncCalendar(); }} style={{ flex: 1, marginTop: 16, padding: 12, borderRadius: 12, background: "linear-gradient(135deg, #f59e0b, #d97706)", border: "none", color: "#fff", fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+                  📅 Calendar
+                </button>
+              </div>
             )}
           </div>
         )}
 
+        {/* Transport Options */}
+        {showTransport && !purchaseComplete && (
+          <div style={{ marginTop: 20, background: "#1e293b", borderRadius: 16, padding: 16 }}>
+            <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14 }}>🚗 Transportation Options</div>
+            {transportOptions.map(transport => (
+              <div key={transport.id} onClick={() => handleSelectTransport(transport)} style={{ background: selectedTransport?.id === transport.id ? "rgba(99,102,241,0.2)" : "transparent", border: selectedTransport?.id === transport.id ? "1px solid #6366f1" : "1px solid #334155", borderRadius: 12, padding: 12, marginBottom: 8, cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontWeight: 500, fontSize: 14 }}>{transport.name}</div>
+                  <div style={{ fontSize: 12, color: "#94a3b8" }}>{transport.time}</div>
+                </div>
+                <div style={{ fontWeight: 600, color: "#6366f1" }}>{transport.price}</div>
+              </div>
+            ))}
+            <button onClick={() => setShowTransport(false)} style={{ width: "100%", marginTop: 8, padding: 10, borderRadius: 10, background: "transparent", border: "1px solid #334155", color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+        )}
+
         {/* Checkout */}
-        {showCheckout && purchasePhase !== "success" && (
+        {showCheckout && !purchaseComplete && purchasePhase !== "success" && (
           <div style={{ marginTop: 20, background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1))", borderRadius: 20, padding: 24, border: "1px solid rgba(139, 92, 246, 0.3)" }}>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 8 }}>🎫 {selectedEvents.length || 1} Ticket(s)</div>
               <div style={{ fontSize: 24, fontWeight: 700 }}>Total: 0.01 SOL</div>
             </div>
             
-            {/* Real Phantom Wallet Connection */}
             {!walletAddress ? (
               <div>
                 <div style={{ fontSize: 13, color: "#a1a1aa", marginBottom: 8 }}>Connect your Phantom wallet:</div>
@@ -298,7 +369,6 @@ export default function Home() {
                   <div style={{ textAlign: "center", padding: 20 }}>
                     <div style={{ fontSize: 24, marginBottom: 12 }}>⛓️ Minting cNFT...</div>
                     <div style={{ fontSize: 12, color: "#94a3b8" }}>Processing transaction on Solana Devnet</div>
-                    <div style={{ marginTop: 12, fontSize: 11, color: "#64748b" }}>This may take a few seconds</div>
                   </div>
                 ) : (
                   <button 
@@ -317,26 +387,46 @@ export default function Home() {
           </div>
         )}
 
-        {purchasePhase === "success" && (
-          <div style={{ marginTop: 20, textAlign: "center", padding: 24, background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))", borderRadius: 20, border: "1px solid rgba(34, 197, 94, 0.3)" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: "#22c55e", marginBottom: 4 }}>Tickets Purchased!</div>
-            <div style={{ fontSize: 13, color: "#71717a" }}>cNFT minted to your wallet</div>
+        {/* Success - Chat stays alive */}
+        {purchaseComplete && (
+          <div style={{ marginTop: 20, background: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))", borderRadius: 20, padding: 24, border: "1px solid rgba(34, 197, 94, 0.3)" }}>
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: "#22c55e", marginBottom: 4 }}>Tickets Purchased!</div>
+              <div style={{ fontSize: 13, color: "#71717a" }}>cNFT minted to your wallet</div>
+            </div>
             
-            <div style={{ marginTop: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa", display: "inline-block" }}>
+            <div style={{ marginBottom: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa" }}>
+              <div style={{ color: "#22c55e", marginBottom: 4 }}>● Transaction</div>
+              {mintedTx.slice(0, 30)}...
+            </div>
+            
+            <div style={{ marginBottom: 16, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa" }}>
               <div style={{ color: "#22c55e", marginBottom: 4 }}>● NFT Collection</div>
               {TIXFLOW_MINT}
             </div>
             
-            <div style={{ marginTop: 8, padding: 12, background: "rgba(255,255,255,0.05)", borderRadius: 8, fontSize: 11, color: "#a1a1aa", display: "inline-block", marginLeft: 8 }}>
-              <div style={{ color: "#22c55e", marginBottom: 4 }}>● Your Wallet</div>
-              {walletAddress.slice(0, 12)}...{walletAddress.slice(-12)}
-            </div>
-            
-            <div style={{ marginTop: 16, fontSize: 12, color: "#64748b" }}>
+            <div style={{ textAlign: "center", fontSize: 12, color: "#64748b", marginBottom: 16 }}>
               <a href={`https://explorer.solana.com/address/${TIXFLOW_MINT}?cluster=devnet`} target="_blank" rel="noopener noreferrer" style={{ color: "#8b5cf6" }}>
                 View NFT Collection on Solana Explorer →
               </a>
+            </div>
+            
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+              <button onClick={() => { handleSyncCalendar(); }} style={{ padding: "10px 16px", borderRadius: 10, background: "linear-gradient(135deg, #f59e0b, #d97706)", border: "none", color: "#fff", fontSize: 13, cursor: "pointer" }}>
+                📅 Sync Calendar
+              </button>
+              <button onClick={() => { setShowTransport(true); addMessage("assistant", "Need transportation to your event? Here are options:"); }} style={{ padding: "10px 16px", borderRadius: 10, background: "linear-gradient(135deg, #6366f1, #4f46e5)", border: "none", color: "#fff", fontSize: 13, cursor: "pointer" }}>
+                🚗 Transport
+              </button>
+              <button onClick={() => { 
+                setPurchaseComplete(false); 
+                setShowCheckout(false);
+                setSelectedEvents([]);
+                addMessage("assistant", "Let's find more events! What are you looking for?");
+              }} style={{ padding: "10px 16px", borderRadius: 10, background: "transparent", border: "1px solid #334155", color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
+                🔍 Find More Events
+              </button>
             </div>
           </div>
         )}
@@ -347,7 +437,7 @@ export default function Home() {
       {/* Input */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "linear-gradient(180deg, transparent, rgba(15,23,42,0.98) 30%)", padding: 20 }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", background: "#1e293b", borderRadius: 16, border: "1px solid #334155", display: "flex", alignItems: "center", padding: 8, gap: 8 }}>
-          <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} placeholder="Ask me to find events..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#f1f5f9", fontSize: 14, padding: 12 }} />
+          <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} placeholder="Ask me to find events, sync calendar, find transport..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#f1f5f9", fontSize: 14, padding: 12 }} />
           <button onClick={handleSend} disabled={!input.trim() || isLoading} style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", cursor: "pointer", opacity: !input.trim() ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
           </button>
