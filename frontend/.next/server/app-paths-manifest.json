@@ -4,6 +4,7 @@
   "/api/cnft/route": "app/api/cnft/route.js",
   "/api/directions/route": "app/api/directions/route.js",
   "/api/mint/route": "app/api/mint/route.js",
+  "/api/nft/route": "app/api/nft/route.js",
   "/chat/page": "app/chat/page.js",
   "/page": "app/page.js"
 }
