@@ -158,8 +158,8 @@ function ChatContent() {
       const connection = new Connection(HELIUS_RPC);
       const buyerPubkey = new PublicKey(walletAddress);
       
-      // Get recent blockhash
-      const { blockhash } = await connection.getLatestBlockhash();
+      // Get recent blockhash with proper commitment
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
       
       // Create a real transaction
       const transaction = new Transaction();
@@ -171,7 +171,7 @@ function ChatContent() {
         SystemProgram.transfer({
           fromPubkey: buyerPubkey,
           toPubkey: new PublicKey('Budget5cecTsuG7tPfFB2D6o1Ae7gNi9z3vKf'),
-          lamports: 1000,
+          lamports: 1000, // 0.001 SOL
         })
       );
       
@@ -180,11 +180,21 @@ function ChatContent() {
       // Send the REAL transaction
       const txHash = await wallet.sendTransaction(transaction, connection);
       
-      setMintedTx(txHash);
-      setPurchasePhase("success");
-      setPurchaseComplete(true);
+      addMessage("assistant", `⏳ Transaction sent! Waiting for confirmation... TX: ${txHash.slice(0, 20)}...`);
       
-      addMessage("assistant", `🎉 REAL transaction completed on Solana devnet!
+      // Wait for confirmation
+      try {
+        await connection.confirmTransaction({
+          signature: txHash,
+          blockhash,
+          lastValidBlockHeight
+        }, 'confirmed');
+        
+        setMintedTx(txHash);
+        setPurchasePhase("success");
+        setPurchaseComplete(true);
+        
+        addMessage("assistant", `🎉 Transaction CONFIRMED on Solana devnet!
 
 🎫 Event: ${selectedEvents[0]?.name || 'Event'}
 💳 Wallet: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
@@ -193,15 +203,38 @@ function ChatContent() {
 🔗 Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet
 
 What would you like to do next?`);
+      } catch (confirmErr) {
+        // Transaction sent but confirmation failed - might still be in mempool
+        setMintedTx(txHash);
+        setPurchasePhase("success");
+        setPurchaseComplete(true);
+        
+        addMessage("assistant", `🎉 Transaction sent! (pending confirmation)
+
+🎫 Event: ${selectedEvents[0]?.name || 'Event'}
+📋 TX: ${txHash}
+
+🔗 View: https://explorer.solana.com/tx/${txHash}?cluster=devnet
+
+What would you like to do next?`);
+      }
       
     } catch (err: any) {
       console.error("Mint error:", err);
       
-      if (err.message?.includes('rejected') || err.message?.includes('User declined')) {
+      // Parse error message
+      const errorMsg = err.message || String(err);
+      
+      if (errorMsg.includes('rejected') || errorMsg.includes('User declined') || errorMsg.includes('4001')) {
         addMessage("assistant", "❌ Transaction rejected. Please approve the transaction in your wallet and try again.");
-        setPurchasePhase("idle");
+      } else if (errorMsg.includes('Insufficient') || errorMsg.includes('balance')) {
+        addMessage("assistant", "❌ Insufficient SOL balance. You need at least 0.01 SOL for the transaction.");
+      } else if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
+        addMessage("assistant", "⏳ Transaction timed out. Please try again.");
       } else {
-        addMessage("assistant", `❌ Transaction failed: ${err.message || 'Unknown error'}`);
+        addMessage("assistant", `❌ Transaction failed: ${errorMsg.slice(0, 100)}`);
+      }
+      setPurchasePhase("idle");
         setPurchasePhase("idle");
       }
     }
