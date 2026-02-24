@@ -235,8 +235,6 @@ What would you like to do next?`);
         addMessage("assistant", `❌ Transaction failed: ${errorMsg.slice(0, 100)}`);
       }
       setPurchasePhase("idle");
-        setPurchasePhase("idle");
-      }
     }
   };
 
