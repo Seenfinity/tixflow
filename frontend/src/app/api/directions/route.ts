@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyAEeTpIRdSlLWaueoqUZ7t-5n1l6dtEZJ0';
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
+    if (!GOOGLE_MAPS_API_KEY) {
+      return NextResponse.json({ error: 'Google Maps API not configured' }, { status: 500 });
+    }
+
     const { origin, destination, mode = 'DRIVE' } = await request.json();
     
     if (!origin || !destination) {

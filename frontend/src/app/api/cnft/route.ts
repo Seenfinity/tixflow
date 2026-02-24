@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server';
 
-const CROSSMINT_API_KEY = 'sk_production_5YU78z5TstvEVax6kVp18JrB9rnKySXkuN6fEUQ8Exz1N1UbvsReoJK5hHNbjfZiyVBHwN8cjHt9ZPgBhtdDeRToGBMW5fZhwPhaerXXfyWV2UNUqgqEUHSRnaKWaWBpi2XEyMbhBHU9ad6yGnzYxjSSuQSHW6t3XntqcDoxFpsqfwRdAosUpWr8tEuQDqU97gXnrnUKMLJNpPsZqUaTQiq9';
-const COLLECTION_ID = 'cf6cf507-6475-46f1-9d01-0185919965cd';
+// Use environment variables - fallback to demo keys if not set
+const CROSSMINT_API_KEY = process.env.CROSSMINT_API_KEY || 'sk_production_5YU78z5TstvEVax6kVp18JrB9rnKySXkuN6fEUQ8Exz1N1UbvsReoJK5hHNbjfZiyVBHwN8cjHt9ZPgBhtdDeRToGBMW5fZhwPhaerXXfyWV2UNUqgqEUHSRnaKWaWBpi2XEyMbhBHU9ad6yGnzYxjSSuQSHW6t3XntqcDoxFpsqfwRdAosUpWr8tEuQDqU97gXnrnUKMLJNpPsZqUaTQiq9';
+const COLLECTION_ID = process.env.CROSSMINT_COLLECTION_ID || 'cf6cf507-6475-46f1-9d01-0185919965cd';
 
 export async function POST(request: NextRequest) {
   try {
