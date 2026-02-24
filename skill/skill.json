@@ -1,7 +1,7 @@
 {
   "name": "tixflow",
-  "version": "0.1.0",
-  "description": "AI-powered event assistant for discovering, booking, and coordinating event tickets",
+  "version": "0.2.0",
+  "description": "AI-powered event assistant for discovering, booking, and coordinating event tickets on Solana",
   "author": "TixFlow Team",
   "homepage": "https://github.com/seenfinity/tixflow",
   "platforms": ["telegram", "discord", "whatsapp"],
@@ -12,8 +12,13 @@
       "buy ticket",
       "purchase ticket",
       "sync calendar",
+      "add to calendar",
       "event notification",
-      "waitlist"
+      "waitlist",
+      "how do i get there",
+      "route to event",
+      "directions to",
+      "get directions"
     ],
     "commands": [
       {
@@ -28,13 +33,18 @@
       },
       {
         "name": "purchaseTicket",
-        "description": "Purchase tickets for an event",
+        "description": "Purchase tickets for an event via cNFT",
         "usage": "buy ticket for [event]"
       },
       {
         "name": "syncToCalendar",
         "description": "Sync event to Google Calendar",
-        "usage": "sync to calendar [event]"
+        "usage": "add to calendar [event]"
+      },
+      {
+        "name": "getDirections",
+        "description": "Get transport directions to event venue",
+        "usage": "how do i get to [event]"
       },
       {
         "name": "addToWaitlist",
@@ -50,17 +60,27 @@
     "tools": [
       {
         "name": "google_calendar",
-        "description": "Sync events to Google Calendar",
+        "description": "Sync events to Google Calendar with direct links",
         "required_env": ["GOOGLE_CALENDAR_API_KEY"]
       },
       {
-        "name": "kyd_protocol",
-        "description": "Interact with KYD Labs ticketing protocol",
-        "required_env": ["KYD_API_KEY"]
+        "name": "google_maps_routes",
+        "description": "Calculate transport routes to event venues",
+        "required_env": ["GOOGLE_MAPS_API_KEY"]
+      },
+      {
+        "name": "crossmint_api",
+        "description": "Mint cNFT tickets on Solana via CrossMint",
+        "required_env": ["CROSSMINT_API_KEY", "CROSSMINT_COLLECTION_ID"]
       },
       {
         "name": "event_scraper",
         "description": "Scrape event data from various sources",
+        "required_env": []
+      },
+      {
+        "name": "solana_wallet",
+        "description": "Detect and manage user wallet connections",
         "required_env": []
       }
     ]
@@ -70,12 +90,14 @@
     "requirements": [
       "OpenClaw agent",
       "Google Calendar API key (for calendar sync)",
-      "KYD Labs API key (optional, for real ticketing)"
+      "Google Maps API key (for directions/routes)",
+      "CrossMint API key + Collection ID (for cNFT minting)"
     ]
   },
   "configuration": {
     "default_location": "London",
     "default_event_types": ["concerts", "theater", "sports"],
+    "demo_mode": false,
     "notification_preferences": {
       "price_drops": true,
       "event_changes": true,
@@ -86,8 +108,10 @@
     "event_discovery": true,
     "price_monitoring": true,
     "calendar_integration": true,
-    "waitlist_management": true,
-    "nft_minting": true
+    "directions_routes": true,
+    "cnft_minting": true,
+    "wallet_detection": true,
+    "waitlist_management": true
   },
   "keywords": [
     "tixflow",
@@ -96,7 +120,10 @@
     "ticketing",
     "concerts",
     "calendar",
-    "kyd",
-    "solana"
+    "solana",
+    "cnft",
+    "nft",
+    "maps",
+    "directions"
   ]
 }
