@@ -40,6 +40,26 @@ const mockEvents: Event[] = [
   { id: "3", name: "Electronic Music Festival", date: "Mar 15, 2026", venue: "Brooklyn Warehouse", price: "$50 - $150", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80", category: "Electronic" },
 ];
 
+// Real events from KYD Labs LPR
+async function fetchRealEvents(): Promise<Event[]> {
+  try {
+    const response = await fetch('/api/events');
+    const data = await response.json();
+    return data.events.map((e: any) => ({
+      id: e.id,
+      name: e.name,
+      date: e.date,
+      venue: e.venue,
+      price: e.price,
+      image: e.image,
+      category: e.category
+    }));
+  } catch (error) {
+    console.error('Failed to fetch real events:', error);
+    return [];
+  }
+}
+
 const transportOptions: TransportOption[] = [
   { id: "uber", name: "Uber", price: "$25", time: "25 min" },
   { id: "metro", name: "Metro", price: "$3", time: "45 min" },
@@ -55,6 +75,7 @@ function ChatContent() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showEvents, setShowEvents] = useState(false);
+  const [realEvents, setRealEvents] = useState<Event[]>([]);
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
   const [purchasePhase, setPurchasePhase] = useState("idle");
@@ -219,14 +240,14 @@ What would you like to do next?`);
     setSelectedEvents(prev => prev.some(e => e.id === event.id) ? prev.filter(e => e.id !== event.id) : [...prev, event]);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg = { id: Date.now().toString(), role: "user" as const, content: input };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const lower = input.toLowerCase();
       let response = "";
       let showResults = false;
@@ -235,6 +256,14 @@ What would you like to do next?`);
       if (lower.includes("find") || lower.includes("search") || lower.includes("concert") || lower.includes("event") || lower.includes("music") || lower.includes("london") || lower.includes("busca") || lower.includes("eventos")) {
         response = "I found some amazing events for you! Here are my top recommendations:";
         showResults = true;
+        // Fetch real events from KYD Labs
+        const events = await fetchRealEvents();
+        if (events.length > 0) {
+          setRealEvents(events);
+          response = `I found ${events.length} real events from Le Poisson Rouge in NYC! Here are the upcoming shows:`;
+        } else {
+          setRealEvents(mockEvents);
+        }
       } else if (lower.includes("calendar") || lower.includes("sync") || lower.includes("calendario")) {
         response = "Let me sync your selected events to your Google Calendar!";
         handleSyncCalendar();
@@ -336,8 +365,8 @@ What would you like to do next?`);
         {/* Events */}
         {showEvents && !purchaseComplete && (
           <div style={{ marginTop: 20, background: "#1e293b", borderRadius: 16, padding: 16 }}>
-            <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14 }}>🎭 Available Events</div>
-            {mockEvents.map(event => (
+            <div style={{ marginBottom: 16, color: "#94a3b8", fontSize: 14 }}>🎭 Available Events <span style={{ fontStyle: "italic", opacity: 0.7 }}>by lpr.kydlabs.com</span></div>
+            {(realEvents.length > 0 ? realEvents : mockEvents).map(event => (
               <div key={event.id} onClick={() => toggleEvent(event)} style={{ display: "flex", gap: 12, padding: 12, background: selectedEvents.some(e => e.id === event.id) ? "rgba(16, 185, 129, 0.1)" : "transparent", border: selectedEvents.some(e => e.id === event.id) ? "1px solid #10b981" : "1px solid #334155", borderRadius: 12, marginBottom: 8, cursor: "pointer" }}>
                 <img src={event.image} alt={event.name} style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover" }} />
                 <div style={{ flex: 1 }}>
@@ -456,7 +485,7 @@ What would you like to do next?`);
       {/* Input */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "linear-gradient(180deg, transparent, rgba(15,23,42,0.98) 30%)", padding: 20 }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", background: "#1e293b", borderRadius: 16, border: "1px solid #334155", display: "flex", alignItems: "center", padding: 8, gap: 8 }}>
-          <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSend()} placeholder="Ask me to find events, sync calendar, find transport..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#f1f5f9", fontSize: 14, padding: 12 }} />
+          <input type="text" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && (handleSend())} placeholder="Ask me to find events, sync calendar, find transport..." style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#f1f5f9", fontSize: 14, padding: 12 }} />
           <button onClick={handleSend} disabled={!input.trim() || isLoading} style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg, #059669, #047857)", border: "none", cursor: "pointer", opacity: !input.trim() ? 0.5 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
           </button>
