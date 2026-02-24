@@ -170,7 +170,7 @@ function ChatContent() {
       transaction.add(
         SystemProgram.transfer({
           fromPubkey: buyerPubkey,
-          toPubkey: new PublicKey('CwgNZ4N3F1r8QW7HnX2QX5Kp5xJ6J5v6X5xJ6J5v6X5x'),
+          toPubkey: new PublicKey('Budget5cecTsuG7tPfFB2D6o1Ae7gNi9z3vKf'),
           lamports: 1000,
         })
       );
