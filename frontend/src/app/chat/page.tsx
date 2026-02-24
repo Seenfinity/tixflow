@@ -145,128 +145,75 @@ function ChatContent() {
     }
   };
 
-  const handleBuy = async () => {
-    if (!walletAddress || !wallet.sendTransaction) {
+    const handleBuy = async () => {
+    if (!walletAddress) {
       addMessage("assistant", "🔗 Please connect your wallet using the button above, then try again.");
       return;
     }
     
     setPurchasePhase("minting");
-    addMessage("assistant", "⛓️ Preparing cNFT mint transaction on Solana devnet...");
+    addMessage("assistant", "⛓️ Minting cNFT via CrossMint on Solana devnet...");
     
     try {
-      // Try to get cNFT transaction from API first
-      let transactionBase64 = null;
+      // Call CrossMint API to mint NFT directly - NO wallet approval needed!
+      const cnftResponse = await fetch('/api/cnft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          walletAddress,
+          eventName: selectedEvents[0]?.name || 'TixFlow Event Ticket'
+        })
+      });
       
-      try {
-        const cnftResponse = await fetch('/api/cnft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            walletAddress,
-            eventName: selectedEvents[0]?.name || 'Ticket Event'
-          })
-        });
-        
-        const cnftData = await cnftResponse.json();
-        
-        if (cnftData.transaction) {
-          transactionBase64 = cnftData.transaction;
-          addMessage("assistant", "📝 cNFT transaction prepared! Please approve in your wallet...");
-        }
-      } catch (cnftErr) {
-        console.log("cNFT API not available, using fallback");
-      }
+      const cnftData = await cnftResponse.json();
       
-      const connection = new Connection(HELIUS_RPC);
-      const buyerPubkey = new PublicKey(walletAddress);
+      console.log("CrossMint response:", cnftData);
       
-      // Get recent blockhash with proper commitment
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-      
-      let transaction: Transaction;
-      
-      if (transactionBase64) {
-        // Use the cNFT transaction from API
-        transaction = Transaction.from(Buffer.from(transactionBase64, 'base64'));
-      } else {
-        // Fallback: create regular transaction that simulates cNFT mint
-        transaction = new Transaction();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = buyerPubkey;
-        
-        // Add a tiny transfer as placeholder for cNFT
-        transaction.add(
-          SystemProgram.transfer({
-            fromPubkey: buyerPubkey,
-            toPubkey: SystemProgram.programId,
-            lamports: 1000,
-          })
-        );
-        
-        addMessage("assistant", "📝 Preparing transaction... Please approve in your wallet...");
-      }
-      
-      // Send the REAL transaction
-      const txHash = await wallet.sendTransaction(transaction, connection);
-      
-      addMessage("assistant", `⏳ Transaction sent! Waiting for confirmation... TX: ${txHash.slice(0, 20)}...`);
-      
-      // Wait for confirmation
-      try {
-        await connection.confirmTransaction({
-          signature: txHash,
-          blockhash,
-          lastValidBlockHeight
-        }, 'confirmed');
-        
-        setMintedTx(txHash);
+      if (cnftData.success && (cnftData.mintHash || cnftData.nftId)) {
+        // NFT minted successfully via CrossMint!
+        setMintedTx(cnftData.mintHash || cnftData.nftId);
         setPurchasePhase("success");
         setPurchaseComplete(true);
         
-        addMessage("assistant", `🎉 Transaction CONFIRMED on Solana devnet!
+        addMessage("assistant", `🎉 REAL cNFT MINTED via CrossMint!
 
 🎫 Event: ${selectedEvents[0]?.name || 'Event'}
 💳 Wallet: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
-📋 TX: ${txHash}
+🆔 NFT ID: ${cnftData.nftId || cnftData.mintHash}
+📋 TX: ${cnftData.txId || 'pending'}
 
-🔗 Explorer: https://explorer.solana.com/tx/${txHash}?cluster=devnet
+🔗 View: ${cnftData.txId ? `https://explorer.solana.com/tx/${cnftData.txId}?cluster=devnet` : 'Minting in progress...'}
+
+Your ticket is now on-chain!
 
 What would you like to do next?`);
-      } catch (confirmErr) {
-        // Transaction sent but confirmation failed - might still be in mempool
-        setMintedTx(txHash);
+      } else if (cnftData.success) {
+        // NFT is being minted (pending)
+        setMintedTx(cnftData.nftId);
         setPurchasePhase("success");
         setPurchaseComplete(true);
         
-        addMessage("assistant", `🎉 Transaction sent! (pending confirmation)
+        addMessage("assistant", `🎉 cNFT MINTING via CrossMint!
 
 🎫 Event: ${selectedEvents[0]?.name || 'Event'}
-📋 TX: ${txHash}
+💳 Wallet: ${walletAddress.slice(0,8)}...${walletAddress.slice(-4)}
+🆔 NFT ID: ${cnftData.nftId}
 
-🔗 View: https://explorer.solana.com/tx/${txHash}?cluster=devnet
+Your ticket is being minted! It will appear in your wallet shortly.
 
 What would you like to do next?`);
+      } else {
+        throw new Error(cnftData.error || 'Mint failed - ' + JSON.stringify(cnftData));
       }
       
     } catch (err: any) {
       console.error("Mint error:", err);
-      
-      // Parse error message
-      const errorMsg = err.message || String(err);
-      
-      if (errorMsg.includes('rejected') || errorMsg.includes('User declined') || errorMsg.includes('4001')) {
-        addMessage("assistant", "❌ Transaction rejected. Please approve the transaction in your wallet and try again.");
-      } else if (errorMsg.includes('Insufficient') || errorMsg.includes('balance')) {
-        addMessage("assistant", "❌ Insufficient SOL balance. You need at least 0.01 SOL for the transaction.");
-      } else if (errorMsg.includes('timeout') || errorMsg.includes('timed out')) {
-        addMessage("assistant", "⏳ Transaction timed out. Please try again.");
-      } else {
-        addMessage("assistant", `❌ Transaction failed: ${errorMsg.slice(0, 100)}`);
-      }
       setPurchasePhase("idle");
+      addMessage("assistant", `❌ Mint failed: ${err.message}. Please try again.`);
     }
   };
+
+
 
   const toggleEvent = (event: Event) => {
     setSelectedEvents(prev => prev.some(e => e.id === event.id) ? prev.filter(e => e.id !== event.id) : [...prev, event]);

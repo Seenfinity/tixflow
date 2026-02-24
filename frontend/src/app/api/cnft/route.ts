@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-const HELIUS_API_KEY = '140d4665-6ab1-4690-8a68-5a51a79601c1';
-const RPC_ENDPOINT = `https://devnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
+const CROSSMINT_API_KEY = 'sk_production_5YU78z5TstvEVax6kVp18JrB9rnKySXkuN6fEUQ8Exz1N1UbvsReoJK5hHNbjfZiyVBHwN8cjHt9ZPgBhtdDeRToGBMW5fZhwPhaerXXfyWV2UNUqgqEUHSRnaKWaWBpi2XEyMbhBHU9ad6yGnzYxjSSuQSHW6t3XntqcDoxFpsqfwRdAosUpWr8tEuQDqU97gXnrnUKMLJNpPsZqUaTQiq9';
+const COLLECTION_ID = 'cf6cf507-6475-46f1-9d01-0185919965cd';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,38 +11,47 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Wallet address required' }, { status: 400 });
     }
 
-    // Fetch blockhash from Helius
-    const response = await fetch(RPC_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'getLatestBlockhash'
-      })
-    });
+    // Mint NFT using CrossMint API
+    const response = await fetch(
+      `https://www.crossmint.com/api/2022-06-09/collections/${COLLECTION_ID}/nfts`,
+      {
+        method: 'POST',
+        headers: {
+          'x-client-secret': CROSSMINT_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          metadata: {
+            name: eventName || 'TixFlow Ticket',
+            description: 'Event ticket purchased via TixFlow AI Assistant',
+            image: 'https://utfs.io/f/75a2dbfc-c0f0-4359-b45c-fbd826026b30-gnltz7.jpg'
+          },
+          recipient: `solana:${walletAddress}`
+        })
+      }
+    );
     
-    const data = await response.json();
-    const blockhash = data.result?.value?.blockhash;
-    
-    if (!blockhash) {
-      throw new Error('Failed to get blockhash');
+    if (!response.ok) {
+      const error = await response.json();
+      return Response.json({ error: error.message || 'Failed to mint NFT' }, { status: response.status });
     }
-
-    // Return transaction template for cNFT mint
-    // The frontend will sign and send this
+    
+    const result = await response.json();
+    
+    // Return the mint result
     return Response.json({
-      blockhash,
-      eventName: eventName || 'Ticket Event',
-      message: 'Ready for cNFT mint - transaction will be created on frontend',
-      // Using a dummy instruction to represent cNFT mint
-      instructionData: 'cNFT mint instruction placeholder'
+      success: true,
+      nftId: result.id,
+      mintHash: result.onChain?.mintHash,
+      txId: result.onChain?.txId,
+      status: result.onChain?.status,
+      message: 'NFT minted successfully!'
     });
 
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Mint Error:', error);
     return Response.json({ 
-      error: 'Failed to prepare cNFT transaction',
+      error: 'Failed to mint NFT',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }

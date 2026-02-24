@@ -6,9 +6,7 @@
 
 **Built for KYD Labs Solana Graveyard Hackathon**
 
-![TixFlow Demo](https://frontend-smoky-seven-13.vercel.app)
-
-**Live Demo**: [https://frontend-smoky-seven-13.vercel.app](https://frontend-smoky-seven-13.vercel.app)
+**Live Demo**: [https://frontend-smoky-seven-13.vercel.app/chat](https://frontend-smoky-seven-13.vercel.app/chat)
 
 </div>
 
@@ -16,37 +14,56 @@
 
 TixFlow is an AI agent that helps users discover, book, and coordinate event tickets — automatically. Just tell it what you want, and it handles the rest.
 
-## ✨ Features
+## ✨ Features (Demo Working)
 
-| Feature | Description |
-|---------|-------------|
-| 🔍 **AI Discovery** | Natural language event search |
-| 🎫 **Smart Booking** | Purchase tickets across platforms |
-| 📅 **Calendar Sync** | Sync to Google Calendar with reminders |
-| ⏰ **Waitlist** | Get notified for sold-out events |
-| 🤖 **Agent Mode** | Let your AI agent handle everything |
-| 🔗 **NFT Tickets** | Tickets as cNFTs on Solana |
+| Feature | Status | Description |
+|---------|--------|-------------|
+| 🔍 **AI Discovery** | ✅ | Natural language event search |
+| 📅 **Calendar Sync** | ✅ | Add events to Google Calendar with direct links |
+| 🗺️ **Transport Routes** | ✅ | Find best routes via Google Maps API |
+| 🎟️ **cNFT Tickets** | ✅ | Real on-chain cNFT minted via CrossMint |
+| 👻 **Ghost Mode** | 🔜 | Buy tickets anonymously |
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js 14 + TypeScript + Tailwind
 - **Blockchain**: Solana (Devnet)
-- **NFT Standard**: cNFT via Bubblegum
+- **NFT Standard**: cNFT via CrossMint API
 - **Wallet**: Phantom Wallet Integration
 - **AI**: Natural language processing
 
-## 🚀 Getting Started
+## 🔄 How It Works
 
-### Demo Mode
+```
+User: "Find concerts in London this weekend"
+    ↓
+TixFlow: Searches events + shows options
+    ↓
+User: "Buy 2 tickets for [event]"
+    ↓
+TixFlow: Mints cNFT directly to user's wallet via CrossMint
+    ↓
+User: "Add to my calendar"
+    ↓
+TixFlow: Generates Google Calendar link
+    ↓
+User: "How do I get there?"
+    ↓
+TixFlow: Shows best transport route via Google Maps
+```
 
-Visit the live demo: https://frontend-smoky-seven-13.vercel.app
+## 🚀 Demo
 
-1. Search for events (try "find concerts in London")
-2. Select tickets
-3. Connect Phantom Wallet
-4. Mint your cNFT ticket!
+**Live**: [https://frontend-smoky-seven-13.vercel.app/chat](https://frontend-smoky-seven-13.vercel.app/chat)
 
-### Development
+### Try these commands:
+
+- "Find concerts in London"
+- "Buy a ticket for that event"
+- "Add it to my calendar"
+- "How do I get there?"
+
+## 🛠️ Development
 
 ```bash
 # Clone the repo
@@ -60,10 +77,19 @@ npm install
 npm run dev
 ```
 
+### Environment Variables
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_HELIUS_RPC=your-helius-rpc-url
+CROSSMINT_API_KEY=your-crossmint-api-key
+CROSSMINT_COLLECTION_ID=your-collection-id
+```
+
 ## 🔗 Links
 
-- **Live Demo**: https://frontend-smoky-seven-13.vercel.app
-- **Chat Interface**: https://frontend-smoky-seven-13.vercel.app/chat
+- **Live Demo**: https://frontend-smoky-seven-13.vercel.app/chat
 - **GitHub**: https://github.com/Seenfinity/tixflow
 
 ## 📄 License
