@@ -1,10 +1,17 @@
 {
   "name": "tixflow",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AI-powered event assistant for discovering, booking, and coordinating event tickets on Solana",
   "author": "TixFlow Team",
   "homepage": "https://github.com/seenfinity/tixflow",
   "platforms": ["telegram", "discord", "whatsapp"],
+  "status": "demo",
+  "roadmap": {
+    "current": "Demo mode - cNFT minting works, events from KYD Labs",
+    "next": "x402 streaming payments for real ticket purchases",
+    "vision": "Agents fully autonomously manage tickets and events for their users"
+  },
+  "notes": "This skill is designed for the Solana AI Agent hackathon. Currently demonstrates cNFT minting and event discovery. Full payment integration coming via x402 to enable agents to purchase tickets on behalf of users.",
   "skills": {
     "triggers": [
       "find event",
@@ -33,7 +40,7 @@
       },
       {
         "name": "purchaseTicket",
-        "description": "Purchase tickets for an event via cNFT",
+        "description": "Purchase tickets for an event via cNFT. Currently demos cNFT minting. Full payments coming via x402 streaming protocol.",
         "usage": "buy ticket for [event]"
       },
       {
@@ -70,8 +77,14 @@
       },
       {
         "name": "crossmint_api",
-        "description": "Mint cNFT tickets on Solana via CrossMint",
+        "description": "Mint cNFT tickets on Solana via CrossMint (current demo mode)",
         "required_env": ["CROSSMINT_API_KEY", "CROSSMINT_COLLECTION_ID"]
+      },
+      {
+        "name": "x402_payments",
+        "description": "Future: Streaming payments protocol for real ticket purchases. Agents pay on behalf of users.",
+        "required_env": ["X402_API_KEY"],
+        "status": "planned"
       },
       {
         "name": "event_scraper",
@@ -109,9 +122,10 @@
     "price_monitoring": true,
     "calendar_integration": true,
     "directions_routes": true,
-    "cnft_minting": true,
+    "cnft_minting": "demo",
     "wallet_detection": true,
-    "waitlist_management": true
+    "waitlist_management": true,
+    "x402_payments": "planned"
   },
   "keywords": [
     "tixflow",
