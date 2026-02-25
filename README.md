@@ -18,6 +18,48 @@ TixFlow is an AI agent that helps users discover, book, and coordinate event tic
 
 **Vision**: In the future, AI agents will fully autonomously manage tickets and events for their human users.
 
+## 🤖 For AI Agents (The Skill)
+
+TixFlow is also available as a **installable skill** for AI agents. Give your agent this skill and it will be able to:
+
+- 🔍 Discover events via natural language
+- 🎟️ Purchase tickets (cNFT on Solana)
+- 📅 Sync events to Google Calendar
+- 🗺️ Calculate transport routes to venues
+- 🔔 Manage waitlists
+
+### Install the Skill
+
+```bash
+# Install via ClawHub
+clawhub install tixflow
+```
+
+Or use directly in OpenClaw:
+```
+/skills install tixflow
+```
+
+### Skill Commands
+
+| Command | Description |
+|---------|-------------|
+| `findEvents` | Search events by criteria |
+| `purchaseTicket` | Buy tickets (cNFT via CrossMint) |
+| `syncToCalendar` | Add event to Google Calendar |
+| `getDirections` | Get transport routes |
+| `addToWaitlist` | Join event waitlist |
+| `checkPrices` | Compare prices across platforms |
+
+### Required Environment Variables
+
+```env
+GOOGLE_CALENDAR_API_KEY=your-key
+GOOGLE_MAPS_API_KEY=your-key
+CROSSMINT_API_KEY=your-key
+CROSSMINT_COLLECTION_ID=your-collection
+```
+
 ## ✨ Features (Demo Working)
 
 | Feature | Status | Description |
