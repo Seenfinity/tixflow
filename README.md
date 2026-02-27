@@ -1,16 +1,16 @@
-# tixflow
+# Tixflow
 
 every time you want to go to an event, you open four tabs, scroll through two ticket platforms, check your calendar, forget to buy, and then see someone posting about it the day after.
 
 tixflow is an AI agent that collapses that whole mess into a conversation. you describe what you want, it finds it, books it, mints your ticket on Solana, syncs your calendar, and even tells you how to get there. the goal was simple: make going to things feel as easy as thinking about going to things.
 
-> started at the Solana Graveyard Hackathon.
+> Started at the Solana Graveyard Hackathon.
 
-**→ [try the demo](https://frontend-smoky-seven-13.vercel.app/)**
+**→ [try the demo](https://www.tixflow.fun/)**
 
 ---
 
-## what it does
+## What it does
 
 you type something like *"find me a concert in NYC this weekend"* and tixflow handles the rest. the full flow in practice:
 
@@ -98,7 +98,7 @@ open `localhost:3000` and start from the chat. for the full minting flow you'll 
 
 ## links
 
-- demo → https://frontend-smoky-seven-13.vercel.app/chat
+- demo → https://www.tixflow.fun/chat
 - repo → https://github.com/Seenfinity/tixflow
 
 ---
