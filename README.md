@@ -1,147 +1,90 @@
-# TixFlow 🎫🤖
+# tixflow
 
-> AI-powered event concierge for the future of ticketing
+every time you want to go to an event, you open four tabs, scroll through two ticket platforms, check your calendar, forget to buy, and then see someone posting about it the day after.
 
-<div align="center">
+tixflow is an AI agent that collapses that whole mess into a conversation. you describe what you want, it finds it, books it, mints your ticket on Solana, syncs your calendar, and even tells you how to get there. the goal was simple: make going to things feel as easy as thinking about going to things.
 
-**Built for KYD Labs Solana Graveyard Hackathon**
+> started at the Solana Graveyard Hackathon.
 
-**Live Demo**: [https://frontend-smoky-seven-13.vercel.app/chat](https://frontend-smoky-seven-13.vercel.app/chat)
+**→ [try the demo](https://frontend-smoky-seven-13.vercel.app/)**
 
-**Status**: 🟡 Demo Mode — cNFT minting works | Real event data from KYD Labs
+---
 
-</div>
+## what it does
 
-## 🎯 What is TixFlow?
+you type something like *"find me a concert in NYC this weekend"* and tixflow handles the rest. the full flow in practice:
 
-TixFlow is an AI agent that helps users discover, book, and coordinate event tickets — automatically. Just tell it what you want, and it handles the rest.
+```
+"Find concerts in NYC this weekend"
+  → searches real events from KYD Labs
 
-**Vision**: In the future, AI agents will fully autonomously manage tickets and events for their human users.
+"Buy 2 tickets for Gary Bartz"
+  → mints a cNFT directly to your wallet via CrossMint
 
-## 🤖 For AI Agents (The Skill)
+"Add it to my calendar"
+  → generates a Google Calendar link
 
-TixFlow is also available as a **installable skill** for AI agents. Give your agent this skill and it will be able to:
+"How do I get there?"
+  → shows the best route via Google Maps
+```
 
-- 🔍 Discover events via natural language
-- 🎟️ Purchase tickets (cNFT on Solana)
-- 📅 Sync events to Google Calendar
-- 🗺️ Calculate transport routes to venues
-- 🔔 Manage waitlists
+the features that are live right now:
 
-### Install the Skill
+- **natural language search** — real events from KYD Labs, no filters needed
+- **cNFT tickets** — minted on-chain via CrossMint API, straight to your wallet
+- **calendar sync** — Google Calendar integration, one step
+- **transport routes** — Google Maps directions to the venue
+- **waitlists** — get notified when sold-out events open up
+
+x402 streaming payments (so agents can buy tickets on your behalf autonomously) are coming next.
+
+---
+
+## the skill — for AI agents
+
+tixflow isn't just a chat interface. it's also an installable skill for AI agents. if you're building on OpenClaw or ClawHub, you can give your agent the full ticketing flow in one install.
 
 ```bash
-# Install via ClawHub
+# via ClawHub
 clawhub install tixflow
-```
 
-Or use directly in OpenClaw:
-```
+# or directly in OpenClaw
 /skills install tixflow
 ```
 
-### Skill Commands
+once installed, your agent gets access to: `findEvents`, `purchaseTicket`, `syncToCalendar`, `getDirections`, `addToWaitlist`, and `checkPrices`.
 
-| Command | Description |
-|---------|-------------|
-| `findEvents` | Search events by criteria |
-| `purchaseTicket` | Buy tickets (cNFT via CrossMint) |
-| `syncToCalendar` | Add event to Google Calendar |
-| `getDirections` | Get transport routes |
-| `addToWaitlist` | Join event waitlist |
-| `checkPrices` | Compare prices across platforms |
-
-### Required Environment Variables
+the skill needs these env vars to run:
 
 ```env
 GOOGLE_CALENDAR_API_KEY=your-key
 GOOGLE_MAPS_API_KEY=your-key
-CROSSMINT_API_KEY=your-key
-CROSSMINT_COLLECTION_ID=your-collection
 ```
 
-## ✨ Features (Demo Working)
+---
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| 🔍 **AI Discovery** | ✅ | Natural language event search with real events from KYD Labs |
-| 📅 **Calendar Sync** | ✅ | Add events to Google Calendar with direct links |
-| 🗺️ **Transport Routes** | ✅ | Find best routes via Google Maps API |
-| 🎟️ **cNFT Tickets** | ✅ | Real on-chain cNFT minted via CrossMint (Demo) |
-| 💳 **x402 Payments** | 🔜 | Streaming payments for real ticket purchases |
+## stack — and why
 
-## 🔮 Roadmap
+**Next.js 14 + TypeScript + Tailwind** for the frontend. Next for SSR on event search pages, TypeScript because the data shapes from ticketing APIs are inconsistent enough that you want the compiler catching mismatches, not runtime errors.
 
-### Current (Demo)
-- ✅ cNFT minting on Solana Devnet
-- ✅ Real events from KYD Labs (Le Poisson Rouge, NYC)
-- ✅ Calendar integration
-- ✅ Transport routes
+**Solana + CrossMint (cNFTs)** for ticket minting. CrossMint handles the minting API so users don't need to manage keypairs themselves — they just receive the cNFT in their wallet. we chose cNFTs over regular NFTs because the cost per ticket is negligible at scale: data lives off-chain in a Merkle tree, only the root is anchored on-chain.
 
-### Next (Coming Soon)
-- 🔄 **x402 Streaming Payments** — Enable agents to purchase tickets on behalf of users
-- 🔄 Multi-platform ticket aggregation
-- 🔄 Price monitoring & alerts
+**Phantom Wallet** because it's where most Solana users already are. wallet-as-identity means we don't need to build auth.
 
-### Vision
-- 🤖 **Autonomous Agents** — AI agents that fully manage event tickets for their users
+**Google Maps + Google Calendar APIs** for the post-purchase flow. the insight here was that buying the ticket is only half the job — getting people to actually show up is the other half.
 
-## 🛠️ Tech Stack
+---
 
-- **Frontend**: Next.js 14 + TypeScript + Tailwind
-- **Blockchain**: Solana (Devnet)
-- **NFT Standard**: cNFT via CrossMint API
-- **Wallet**: Phantom Wallet Integration
-- **AI**: Natural language processing
-
-## 🔄 How It Works
-
-```
-User: "Find concerts in NYC this weekend"
-    ↓
-TixFlow: Searches real events from KYD Labs
-    ↓
-User: "Buy 2 tickets for Gary Bartz"
-    ↓
-TixFlow: Mints cNFT directly to user's wallet via CrossMint
-    ↓
-User: "Add to my calendar"
-    ↓
-TixFlow: Generates Google Calendar link
-    ↓
-User: "How do I get there?"
-    ↓
-TixFlow: Shows best transport route via Google Maps
-```
-
-## 🚀 Demo
-
-**Live**: [https://frontend-smoky-seven-13.vercel.app/chat](https://frontend-smoky-seven-13.vercel.app/chat)
-
-### Try these commands:
-
-- "Find events" or "search concerts"
-- "Buy a ticket for that event"
-- "Add it to my calendar"
-- "How do I get there?"
-
-## 🛠️ Development
+## run it locally
 
 ```bash
-# Clone the repo
 git clone https://github.com/Seenfinity/tixflow.git
 cd tixflow/frontend
-
-# Install dependencies
 npm install
-
-# Run locally
 npm run dev
 ```
 
-### Environment Variables
-
-Create `.env.local`:
+create a `.env.local` with:
 
 ```env
 NEXT_PUBLIC_HELIUS_RPC=your-helius-rpc-url
@@ -149,15 +92,17 @@ CROSSMINT_API_KEY=your-crossmint-api-key
 CROSSMINT_COLLECTION_ID=your-collection-id
 ```
 
-## 🔗 Links
-
-- **Live Demo**: https://frontend-smoky-seven-13.vercel.app/chat
-- **GitHub**: https://github.com/Seenfinity/tixflow
-
-## 📄 License
-
-MIT
+open `localhost:3000` and start from the chat. for the full minting flow you'll need Phantom installed and switched to Devnet.
 
 ---
 
-*Built with ❤️ by Seenfinity for KYD Labs Solana Graveyard Hackathon*
+## links
+
+- demo → https://frontend-smoky-seven-13.vercel.app/chat
+- repo → https://github.com/Seenfinity/tixflow
+
+---
+
+## license
+
+MIT — do whatever, just don't resell tickets with it. that's the whole problem we're solving.
